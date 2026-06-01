@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="title" content="Abhushan Admin Dashboard" />
+  <meta name="description" content="Secure administrative panel to review and manage customer jewelry design appointments." />
+  <title>Abhushan – Admin Appointment Portal</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ========== BRAND THEMEING ========== */
+    :root {
+      --color-bg:          #1E1617;   /* Signature Dark Cocoa Charcoal */
+      --color-bg-dark:     #1E1617;
+      --color-text:        #FAF8F4;   /* Creamy Off-White */
+      --color-text-light:  #CFC9C5;   /* Warm light gray for contrast */
+      --color-text-muted:  #8A807C;
+      --color-gold:        #D4AF7A;   /* Soft bright gold */
+      --color-gold-light:  #E8C39E;
+      --color-border:      #3D2E30;   /* Dark border */
+      --color-white:       #2A1E20;   /* Dark card background panels */
+      --font-serif:   'Playfair Display', 'Cormorant Garamond', 'Georgia', serif;
+      --font-sans:    'Jost', 'Helvetica Neue', Arial, sans-serif;
+      --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --dur:  0.3s;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ========== AUTHENTICATION PANEL ========== */
+    .auth-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: linear-gradient(rgba(50, 35, 37, 0.55), rgba(50, 35, 37, 0.55)), url("images/extras/discount.png") no-repeat center center;
+      background-size: cover;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .auth-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .auth-card {
+      background: rgba(42, 30, 32, 0.96); /* High-contrast dark card background */
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(192, 139, 93, 0.25);
+      border-radius: 6px;
+      padding: 45px 40px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    .auth-wrapper.active .auth-card {
+      transform: scale(1);
+    }
+
+    .auth-logo {
+      font-family: var(--font-serif);
+      font-size: 28px;
+      color: var(--color-text);
+      margin-bottom: 6px;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+
+    .auth-title {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-gold);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .auth-subtitle {
+      color: var(--color-text-light);
+      font-size: 13.5px;
+      margin-bottom: 25px;
+      font-weight: 300;
+      line-height: 1.5;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--color-border);
+      background: var(--color-white);
+      color: var(--color-text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      border-radius: 4px;
+      outline: none;
+      margin-bottom: 4px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .auth-input:focus {
+      border-color: var(--color-gold);
+      box-shadow: 0 0 0 3px rgba(192, 139, 93, 0.15);
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--color-text);
+      color: var(--color-white);
+      border: 1px solid var(--color-text);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+
+    .auth-btn:hover {
+      background: var(--color-gold);
+      border-color: var(--color-gold);
+    }
+
+    .auth-error {
+      color: #d93838;
+      font-size: 12px;
+      margin-bottom: 12px;
+      min-height: 18px;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    .auth-back-link {
+      display: inline-block;
+      margin-top: 20px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--color-text-light);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+      transition: color 0.2s;
+      font-weight: 500;
+    }
+
+    .auth-back-link:hover {
+      color: var(--color-gold);
+    }
+
+    /* ========== DASHBOARD LAYOUT ========== */
+    .dashboard-wrapper {
+      display: none; /* Controlled dynamically by JS */
+      padding: 50px 24px;
+      max-width: var(--max-width);
+      margin: 0 auto;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 35px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 24px;
+      gap: 20px;
+    }
+
+    .dashboard-title-group h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(28px, 4vw, 36px);
+      font-weight: 300;
+      letter-spacing: 0.01em;
+    }
+
+    .dashboard-title-group p {
+      color: var(--color-gold);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    .btn-back-web {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      background: transparent;
+      color: var(--color-text);
+      border: 1px solid var(--color-text);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.25s var(--ease);
+    }
+
+    .btn-back-web:hover {
+      background: var(--color-text);
+      color: var(--color-white);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(50, 35, 37, 0.12);
+    }
+
+    /* ========== STATS COUNT CARDS ========== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 35px;
+    }
+
+    .stat-card {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 15px rgba(50, 35, 37, 0.02);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(50, 35, 37, 0.05);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+    }
+
+    .stat-card.total::before { background: var(--color-gold); }
+    .stat-card.pending::before { background: #D97706; }
+    .stat-card.approved::before { background: #059669; }
+    .stat-card.completed::before { background: #2563EB; }
+    .stat-card.cancelled::before { background: #DC2626; }
+
+    .stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-text-light);
+      font-weight: 600;
+    }
+
+    .stat-num {
+      font-size: 30px;
+      font-family: var(--font-serif);
+      font-weight: 300;
+      margin-top: 6px;
+      color: var(--color-text);
+    }
+
+    /* ========== TOOLBAR CONTROLS ========== */
+    .toolbar-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-filter-group {
+      display: flex;
+      gap: 12px;
+      flex: 1;
+      max-width: 580px;
+      min-width: 290px;
+    }
+
+    .search-control {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px;
+      padding-left: 36px;
+      border: 1px solid var(--color-border);
+      background: var(--color-white);
+      border-radius: 4px;
+      outline: none;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--color-text);
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--color-gold);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+      pointer-events: none;
+      width: 14px;
+      height: 14px;
+      display: inline-block;
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1px solid var(--color-border);
+      background: var(--color-white);
+      color: var(--color-text);
+      border-radius: 4px;
+      outline: none;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      cursor: pointer;
+      min-width: 140px;
+      transition: border-color 0.2s;
+    }
+
+    .filter-select:focus {
+      border-color: var(--color-gold);
+    }
+
+    .action-buttons-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      background: transparent;
+      color: var(--color-text-light);
+      border: 1px solid var(--color-border);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-white);
+      color: var(--color-text);
+    }
+
+    .btn-danger {
+      padding: 10px 16px;
+      background: transparent;
+      color: #DC2626;
+      border: 1px solid #DC2626;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: #DC2626;
+      color: var(--color-white);
+    }
+
+    .btn-export {
+      padding: 10px 16px;
+      background: transparent;
+      color: var(--color-gold);
+      border: 1px solid var(--color-gold);
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .btn-export:hover {
+      background: var(--color-gold);
+      color: var(--color-white);
+    }
+
+    /* ========== APPOINTMENTS TABLE ========== */
+    .table-container {
+      background: var(--color-white);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(50, 35, 37, 0.01);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background-color: #23191B; /* High-contrast header */
+      padding: 14px 18px;
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--color-gold);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    td {
+      padding: 16px 18px;
+      font-size: 13.5px;
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      color: var(--color-text);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .booking-ref-id {
+      font-family: monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--color-gold-light);
+      background: rgba(192, 139, 93, 0.08);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(192, 139, 93, 0.2);
+    }
+
+    .customer-name {
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+
+    .customer-contact {
+      font-size: 11.5px;
+      color: var(--color-text-light);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .booking-service-name {
+      font-weight: 500;
+      color: var(--color-text);
+    }
+
+    .booking-notes-snippet {
+      font-size: 11.5px;
+      color: var(--color-text-light);
+      margin-top: 5px;
+      max-width: 250px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-style: italic;
+    }
+
+    .booking-notes-full {
+      cursor: pointer;
+      border-bottom: 1px dashed var(--color-text-muted);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+
+    .status-badge.pending { background: #FEF3C7; color: #D97706; }
+    .status-badge.approved { background: #D1FAE5; color: #065F46; }
+    .status-badge.completed { background: #DBEAFE; color: #1E40AF; }
+    .status-badge.cancelled { background: #FEE2E2; color: #991B1B; }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      background: none;
+      border: 1px solid var(--color-border);
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .btn-action.approve {
+      color: #065F46;
+      border-color: #D1FAE5;
+      background-color: #F0FDF4;
+    }
+
+    .btn-action.approve:hover {
+      background-color: #D1FAE5;
+      border-color: #A7F3D0;
+    }
+
+    .btn-action.complete {
+      color: #1E40AF;
+      border-color: #DBEAFE;
+      background-color: #EFF6FF;
+    }
+
+    .btn-action.complete:hover {
+      background-color: #DBEAFE;
+      border-color: #BFDBFE;
+    }
+
+    .btn-action.cancel {
+      color: #991B1B;
+      border-color: #FEE2E2;
+      background-color: #FEF2F2;
+    }
+
+    .btn-action.cancel:hover {
+      background-color: #FEE2E2;
+      border-color: #FCA5A5;
+    }
+
+    .btn-action.delete {
+      color: var(--color-text-light);
+      border-color: var(--color-border);
+      background-color: transparent;
+    }
+
+    .btn-action.delete:hover {
+      color: #DC2626;
+      border-color: #FEE2E2;
+      background-color: #FEF2F2;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+      color: var(--color-text-light);
+    }
+
+    .empty-state h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      margin-bottom: 8px;
+      font-weight: 400;
+    }
+
+    .empty-state p {
+      font-size: 13.5px;
+      font-weight: 300;
+    }
+
+    /* ========== CUSTOM DIALOG OVERLAY ========== */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(50, 35, 37, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 20000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .confirm-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .confirm-card {
+      background: var(--color-bg);
+      border: 1px solid rgba(192, 139, 93, 0.3);
+      border-radius: 6px;
+      padding: 30px;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+    }
+
+    .confirm-overlay.active .confirm-card {
+      transform: scale(1);
+    }
+
+    .confirm-title {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: var(--color-text);
+    }
+
+    .confirm-desc {
+      font-size: 13px;
+      color: var(--color-text-light);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .confirm-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .confirm-btn {
+      padding: 9px 18px;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+
+    .confirm-btn.yes {
+      background: #DC2626;
+      color: var(--color-white);
+      border-color: #DC2626;
+    }
+
+    .confirm-btn.yes:hover {
+      background: #B91C1C;
+      border-color: #B91C1C;
+    }
+
+    .confirm-btn.no {
+      background: transparent;
+      color: var(--color-text);
+      border-color: var(--color-text);
+    }
+
+    .confirm-btn.no:hover {
+      background: var(--color-white);
+    }
+
+    /* ========== CUSTOM SYSTEM NOTIFICATION TOAST ========== */
+    .admin-toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--color-bg-dark);
+      color: var(--color-white);
+      padding: 12px 24px;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 12.5px;
+      letter-spacing: 0.03em;
+      z-index: 30000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .admin-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== RESPONSIVE DESIGN BREAKPOINTS ========== */
+    @media (max-width: 900px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      tr {
+        border-bottom: 2px solid var(--color-border);
+        padding: 20px 0;
+      }
+      td {
+        border: none;
+        padding: 8px 18px;
+        position: relative;
+        padding-left: 40%;
+      }
+      td:before {
+        position: absolute;
+        left: 18px;
+        width: 35%;
+        white-space: nowrap;
+        font-weight: 600;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: var(--color-text-light);
+        letter-spacing: 0.05em;
+      }
+      td:nth-of-type(1):before { content: "Ref ID"; }
+      td:nth-of-type(2):before { content: "Customer"; }
+      td:nth-of-type(3):before { content: "Date & Time"; }
+      td:nth-of-type(4):before { content: "Service"; }
+      td:nth-of-type(5):before { content: "Status"; }
+      td:nth-of-type(6):before { content: "Actions"; }
+
+      .action-buttons {
+        margin-top: 4px;
+      }
+      .booking-notes-snippet {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .btn-back-web {
+        width: 100%;
+        justify-content: center;
+      }
+      .toolbar-wrap {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-filter-group {
+        flex-direction: column;
+      }
+      .action-buttons-group {
+        justify-content: stretch;
+      }
+      .action-buttons-group button {
+        flex: 1;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- AUTHENTICATION FORM SCREEN -->
+  <div class="auth-wrapper" id="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">Abhushan</div>
+      <h2 class="auth-title">Admin Dashboard</h2>
+      <p class="auth-subtitle">Verify your identity with the admin password to access the appointments records database.</p>
+      
+      <form id="admin-login-form">
+        <input type="password" id="admin-password-input" class="auth-input" placeholder="Password" required />
+        <div class="auth-error" id="auth-error"></div>
+        <button type="submit" class="auth-btn">Authorize Access</button>
+      </form>
+      
+      <a href="index.html" class="auth-back-link">Return to Shop Website</a>
+    </div>
+  </div>
+
+  <!-- MAIN ADMIN DASHBOARD WRAPPER -->
+  <div class="dashboard-wrapper" id="dashboard-wrapper">
+    
+    <!-- Dashboard Header -->
+    <header class="dashboard-header">
+      <div class="dashboard-title-group">
+        <h1>Abhushan Studio Portal</h1>
+        <p>Jewelry Appointments Management Console</p>
+      </div>
+      <a href="index.html" class="btn-back-web">
+        <!-- SVG Left Arrow Icon -->
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-top:-1px;">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Website
+      </a>
+    </header>
+
+    <!-- Metrics Cards Grid -->
+    <section class="stats-grid">
+      <div class="stat-card total">
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-num" id="stat-total">0</div>
+      </div>
+      <div class="stat-card pending">
+        <div class="stat-label">Pending Reviews</div>
+        <div class="stat-num" id="stat-pending">0</div>
+      </div>
+      <div class="stat-card approved">
+        <div class="stat-label">Approved</div>
+        <div class="stat-num" id="stat-approved">0</div>
+      </div>
+      <div class="stat-card completed">
+        <div class="stat-label">Completed</div>
+        <div class="stat-num" id="stat-completed">0</div>
+      </div>
+      <div class="stat-card cancelled">
+        <div class="stat-label">Cancelled</div>
+        <div class="stat-num" id="stat-cancelled">0</div>
+      </div>
+    </section>
+
+    <!-- Toolbar Controls -->
+    <section class="toolbar-wrap">
+      <div class="search-filter-group">
+        <div class="search-control">
+          <!-- Search SVG Icon -->
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" class="search-input" placeholder="Search by name, phone, email, or Ref ID..." />
+        </div>
+        <select id="status-filter" class="filter-select">
+          <option value="ALL">All Statuses</option>
+          <option value="Pending">Pending Review</option>
+          <option value="Approved">Approved</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      
+      <div class="action-buttons-group">
+        <button class="btn-secondary btn-export" id="btn-export">Export to CSV</button>
+        <button class="btn-danger" id="btn-clear-all">Clear All</button>
+      </div>
+    </section>
+
+    <!-- Table Container -->
+    <section class="table-container">
+      <table id="appointments-table">
+        <thead>
+          <tr>
+            <th>Ref ID</th>
+            <th>Customer Details</th>
+            <th>Appointment Date &amp; Time</th>
+            <th>Service Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+      
+      <!-- Empty State -->
+      <div class="empty-state" id="empty-state" style="display: none;">
+        <h3>No Appointments Found</h3>
+        <p>No customer records match your filter criteria or the database is empty.</p>
+      </div>
+    </section>
+
+    <!-- Bottom Return Nav Bar Removed -->
+
+  </div>
+
+  <!-- Custom Deletion Confirm Box -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-card">
+      <h3 class="confirm-title" id="confirm-title">Confirm Deletion</h3>
+      <p class="confirm-desc" id="confirm-desc">Are you sure you want to delete this appointment? This action is permanent and cannot be undone.</p>
+      <div class="confirm-btns">
+        <button class="confirm-btn yes" id="confirm-btn-yes">Yes, Delete</button>
+        <button class="confirm-btn no" id="confirm-btn-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Notification Toast -->
+  <div class="admin-toast" id="admin-toast">System Message</div>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script>
+    (function() {
+      'use strict';
+
+      // State variables
+      let appointments = [];
+      let activeConfirmAction = null;
+
+      // DOM Elements
+      const authWrapper = document.getElementById('auth-wrapper');
+      const authCard = document.querySelector('.auth-card');
+      const loginForm = document.getElementById('admin-login-form');
+      const passwordInput = document.getElementById('admin-password-input');
+      const authError = document.getElementById('auth-error');
+
+      const dashboardWrapper = document.getElementById('dashboard-wrapper');
+      const tableBody = document.getElementById('table-body');
+      const emptyState = document.getElementById('empty-state');
+
+      // Metric elements
+      const statTotal = document.getElementById('stat-total');
+      const statPending = document.getElementById('stat-pending');
+      const statApproved = document.getElementById('stat-approved');
+      const statCompleted = document.getElementById('stat-completed');
+      const statCancelled = document.getElementById('stat-cancelled');
+
+      // Filter elements
+      const searchInput = document.getElementById('search-input');
+      const statusFilter = document.getElementById('status-filter');
+      const btnExport = document.getElementById('btn-export');
+      const btnClearAll = document.getElementById('btn-clear-all');
+
+      // Confirm dialog elements
+      const confirmOverlay = document.getElementById('confirm-overlay');
+      const confirmTitle = document.getElementById('confirm-title');
+      const confirmDesc = document.getElementById('confirm-desc');
+      const confirmBtnYes = document.getElementById('confirm-btn-yes');
+      const confirmBtnNo = document.getElementById('confirm-btn-no');
+
+      // Toast Element
+      const toast = document.getElementById('admin-toast');
+
+      /* ==========================================
+         AUTHENTICATION CONTROL GATE
+         ========================================== */
+      function checkAuth() {
+        if (sessionStorage.getItem('abhushan_admin_authenticated') === 'true') {
+          showDashboard();
+        } else {
+          showAuth();
+        }
+      }
+
+      function showAuth() {
+        dashboardWrapper.style.display = 'none';
+        authWrapper.classList.add('active');
+        passwordInput.value = '';
+        authError.textContent = '';
+        passwordInput.focus();
+      }
+
+      function showDashboard() {
+        authWrapper.classList.remove('active');
+        dashboardWrapper.style.display = 'block';
+        loadAppointments();
+        renderDashboard();
+      }
+
+      if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const enteredPassword = passwordInput.value.trim();
+          
+          if (enteredPassword === 'admin123' || enteredPassword === 'abhushan2026') {
+            sessionStorage.setItem('abhushan_admin_authenticated', 'true');
+            showToast('Authorization successful. Welcoming Admin... ✦');
+            setTimeout(() => {
+              showDashboard();
+            }, 500);
+          } else {
+            authError.textContent = 'Incorrect passcode. Please try again.';
+            passwordInput.value = '';
+            passwordInput.focus();
+          }
+        });
+      }
+
+      /* ==========================================
+         DATA PERSISTENCE & PARSING
+         ========================================== */
+      function loadAppointments() {
+        try {
+          const raw = localStorage.getItem('abhushan_appointments');
+          if (raw) {
+            appointments = JSON.parse(raw);
+            // Sort by date (descending order, newest first or by date/time order)
+            appointments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+          } else {
+            appointments = [];
+          }
+        } catch (err) {
+          console.error('Error loading appointments:', err);
+          appointments = [];
+        }
+      }
+
+      function saveAppointments() {
+        try {
+          localStorage.setItem('abhushan_appointments', JSON.stringify(appointments));
+        } catch (err) {
+          console.error('Error saving appointments:', err);
+          showToast('Failed to save appointments database!');
+        }
+      }
+
+      /* ==========================================
+         DASHBOARD RENDER & CALCULATOR
+         ========================================== */
+      function renderDashboard() {
+        const query = searchInput.value.toLowerCase().trim();
+        const selectedStatus = statusFilter.value;
+
+        // Calculate aggregate statistics
+        let countTotal = appointments.length;
+        let countPending = 0;
+        let countApproved = 0;
+        let countCompleted = 0;
+        let countCancelled = 0;
+
+        appointments.forEach(app => {
+          if (app.status === 'Pending') countPending++;
+          else if (app.status === 'Approved') countApproved++;
+          else if (app.status === 'Completed') countCompleted++;
+          else if (app.status === 'Cancelled') countCancelled++;
+        });
+
+        // Set labels
+        statTotal.textContent = countTotal;
+        statPending.textContent = countPending;
+        statApproved.textContent = countApproved;
+        statCompleted.textContent = countCompleted;
+        statCancelled.textContent = countCancelled;
+
+        // Apply filters
+        const filtered = appointments.filter(app => {
+          // Status check
+          if (selectedStatus !== 'ALL' && app.status !== selectedStatus) {
+            return false;
+          }
+          // Search query check (Ref ID, Name, Phone, Email, Service, Notes)
+          if (query) {
+            const matchId = app.id.toLowerCase().includes(query);
+            const matchName = app.name.toLowerCase().includes(query);
+            const matchPhone = app.phone.toLowerCase().includes(query);
+            const matchEmail = app.email.toLowerCase().includes(query);
+            const matchService = app.service.toLowerCase().includes(query);
+            const matchNotes = (app.notes || '').toLowerCase().includes(query);
+            return matchId || matchName || matchPhone || matchEmail || matchService || matchNotes;
+          }
+          return true;
+        });
+
+        // Clear existing table contents
+        tableBody.innerHTML = '';
+
+        if (filtered.length === 0) {
+          emptyState.style.display = 'block';
+        } else {
+          emptyState.style.display = 'none';
+
+          filtered.forEach(app => {
+            const tr = document.createElement('tr');
+            
+            // Format dates neatly
+            let formattedDate = app.date;
+            try {
+              if (app.date) {
+                const parts = app.date.split('-');
+                if (parts.length === 3) {
+                  const d = new Date(parts[0], parts[1]-1, parts[2]);
+                  formattedDate = d.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+                }
+              }
+            } catch(e){}
+
+            // Status Badge
+            const badgeClass = app.status.toLowerCase();
+            const badge = `<span class="status-badge ${badgeClass}">${app.status}</span>`;
+
+            // Action buttons configuration based on status
+            let actionsHtml = '';
+            if (app.status === 'Pending') {
+              actionsHtml += `<button class="btn-action approve" data-id="${app.id}" title="Approve Appointment">Approve</button>`;
+              actionsHtml += `<button class="btn-action cancel" data-id="${app.id}" title="Cancel Appointment">Cancel</button>`;
+            } else if (app.status === 'Approved') {
+              actionsHtml += `<button class="btn-action complete" data-id="${app.id}" title="Complete Appointment">Complete</button>`;
+              actionsHtml += `<button class="btn-action cancel" data-id="${app.id}" title="Cancel Appointment">Cancel</button>`;
+            } else if (app.status === 'Completed' || app.status === 'Cancelled') {
+              // No status flow actions, clean display
+            }
+            // Always allow delete
+            actionsHtml += `<button class="btn-action delete" data-id="${app.id}" title="Remove Appointment Record">Delete</button>`;
+
+            // Note toggle
+            let notesHtml = '—';
+            if (app.notes) {
+              if (app.notes.length > 28) {
+                const shortNote = app.notes.substring(0, 25) + '...';
+                notesHtml = `<div class="booking-notes-snippet" title="Click to view full notes">
+                              <span class="booking-notes-full" data-note="${app.notes.replace(/"/g, '&quot;')}">${shortNote}</span>
+                             </div>`;
+              } else {
+                notesHtml = `<div class="booking-notes-snippet">${app.notes}</div>`;
+              }
+            }
+
+            tr.innerHTML = `
+              <td><span class="booking-ref-id">${app.id}</span></td>
+              <td>
+                <div class="customer-name">${escapeHtml(app.name)}</div>
+                <div class="customer-contact">
+                  <span style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; stroke: var(--color-gold); flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    ${escapeHtml(app.email)}
+                  </span>
+                  <span style="display: flex; align-items: center; gap: 6px;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 12px; height: 12px; stroke: var(--color-gold); flex-shrink: 0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    ${escapeHtml(app.phone)}
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div style="font-weight: 500;">${formattedDate}</div>
+                <div style="font-size: 12px; color: var(--color-text-light); margin-top:2px;">${app.time}</div>
+              </td>
+              <td>
+                <div class="booking-service-name">${app.service}</div>
+                ${notesHtml}
+              </td>
+              <td>${badge}</td>
+              <td>
+                <div class="action-buttons">
+                  ${actionsHtml}
+                </div>
+              </td>
+            `;
+
+            tableBody.appendChild(tr);
+          });
+
+          // Set click listeners for note previews
+          document.querySelectorAll('.booking-notes-full').forEach(el => {
+            el.addEventListener('click', function() {
+              const fullNote = this.getAttribute('data-note');
+              showConfirmDialog('Special Requests Note', fullNote, null, 'Close Note', false);
+            });
+          });
+
+          // Bind Action click listeners
+          bindTableButtons();
+        }
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;');
+      }
+
+      /* ==========================================
+         TABLE ROW OPERATIONS / BINDINGS
+         ========================================== */
+      function bindTableButtons() {
+        // Approve Handler
+        document.querySelectorAll('.btn-action.approve').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            updateAppointmentStatus(id, 'Approved');
+          });
+        });
+
+        // Complete Handler
+        document.querySelectorAll('.btn-action.complete').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            updateAppointmentStatus(id, 'Completed');
+          });
+        });
+
+        // Cancel Handler
+        document.querySelectorAll('.btn-action.cancel').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            updateAppointmentStatus(id, 'Cancelled');
+          });
+        });
+
+        // Delete Handler (Confirmation required)
+        document.querySelectorAll('.btn-action.delete').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            showConfirmDialog(
+              'Delete Booking Record',
+              `Are you sure you want to permanently remove booking <strong>${id}</strong> from the system?`,
+              () => deleteAppointment(id)
+            );
+          });
+        });
+      }
+
+      function updateAppointmentStatus(id, newStatus) {
+        const index = appointments.findIndex(app => app.id === id);
+        if (index !== -1) {
+          appointments[index].status = newStatus;
+          saveAppointments();
+          renderDashboard();
+          showToast(`Booking ${id} status updated to: ${newStatus}`);
+        }
+      }
+
+      function deleteAppointment(id) {
+        const index = appointments.findIndex(app => app.id === id);
+        if (index !== -1) {
+          appointments.splice(index, 1);
+          saveAppointments();
+          renderDashboard();
+          showToast(`Booking record ${id} deleted.`);
+        }
+      }
+
+      /* ==========================================
+         CONFIRMATION DIALOG WINDOW
+         ========================================== */
+      function showConfirmDialog(title, description, onYesCallback, yesText = 'Yes, Delete', isDestructive = true) {
+        confirmTitle.textContent = title;
+        confirmDesc.innerHTML = description;
+        confirmBtnYes.textContent = yesText;
+
+        if (isDestructive) {
+          confirmBtnYes.className = 'confirm-btn yes'; // Red buttons for actions
+        } else {
+          confirmBtnYes.className = 'confirm-btn no'; // Neutral border buttons for notes
+          confirmBtnYes.style.borderColor = 'var(--color-text)';
+          confirmBtnYes.style.color = 'var(--color-text)';
+        }
+
+        // Keep callback references
+        activeConfirmAction = onYesCallback;
+        confirmOverlay.classList.add('active');
+      }
+
+      function closeConfirmDialog() {
+        confirmOverlay.classList.remove('active');
+        activeConfirmAction = null;
+      }
+
+      if (confirmBtnNo) {
+        confirmBtnNo.addEventListener('click', closeConfirmDialog);
+      }
+
+      if (confirmBtnYes) {
+        confirmBtnYes.addEventListener('click', () => {
+          if (activeConfirmAction) {
+            activeConfirmAction();
+          }
+          closeConfirmDialog();
+        });
+      }
+
+      // Close confirm overlay if clicked on overlay bg
+      if (confirmOverlay) {
+        confirmOverlay.addEventListener('click', (e) => {
+          if (e.target === confirmOverlay) {
+            closeConfirmDialog();
+          }
+        });
+      }
+
+      /* ==========================================
+         SEARCH & FILTERS BINDINGS
+         ========================================== */
+      if (searchInput) {
+        searchInput.addEventListener('input', renderDashboard);
+      }
+
+      if (statusFilter) {
+        statusFilter.addEventListener('change', renderDashboard);
+      }
+
+      // Clear All Records Button
+      if (btnClearAll) {
+        btnClearAll.addEventListener('click', () => {
+          if (appointments.length === 0) {
+            showToast('The database is already empty.');
+            return;
+          }
+          showConfirmDialog(
+            'Clear All Appointments',
+            '<strong>WARNING!</strong> This will completely wipe out the local appointments database. This action is irreversible. Are you absolutely sure?',
+            () => {
+              appointments = [];
+              saveAppointments();
+              renderDashboard();
+              showToast('All booking records cleared.');
+            }
+          );
+        });
+      }
+
+      /* ==========================================
+         CSV DATA EXPORTER
+         ========================================== */
+      if (btnExport) {
+        btnExport.addEventListener('click', () => {
+          if (appointments.length === 0) {
+            showToast('No records available to export.');
+            return;
+          }
+
+          // CSV Headers
+          let csvContent = "booking_id,customer_name,email,phone,appointment_date,time_slot,service_type,status,created_at,notes\n";
+          
+          appointments.forEach(app => {
+            // Escape values enclosing them in double-quotes and doubling internal double quotes
+            const row = [
+              app.id,
+              `"${app.name.replace(/"/g, '""')}"`,
+              `"${app.email.replace(/"/g, '""')}"`,
+              `"${app.phone.replace(/"/g, '""')}"`,
+              app.date,
+              `"${app.time.replace(/"/g, '""')}"`,
+              `"${app.service.replace(/"/g, '""')}"`,
+              app.status,
+              app.created_at,
+              `"${(app.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+            ];
+            csvContent += row.join(",") + "\n";
+          });
+
+          // Download link
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.setAttribute("href", url);
+          link.setAttribute("download", `abhushan_appointments_${new Date().toISOString().split('T')[0]}.csv`);
+          link.style.visibility = 'hidden';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          showToast('CSV export downloaded successfully! ✦');
+        });
+      }
+
+      /* ==========================================
+         SYSTEM TOAST ALERT
+         ========================================== */
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+
+      // Check Authentication Status on Page Load
+      checkAuth();
+
+    })();
+  </script>
+</body>
+</html>
