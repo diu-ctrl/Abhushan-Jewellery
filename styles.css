@@ -3113,7 +3113,7 @@ select {
 
 @media (max-width: 1024px) {
   .hero-bg-img {
-    object-position: 12% center !important;
+    object-position: 9% center !important;
   }
 }
 
