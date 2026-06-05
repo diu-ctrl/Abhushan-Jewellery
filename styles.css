@@ -3111,3 +3111,10 @@ select {
   margin-top: 4px;
 }
 
+@media (max-width: 1024px) {
+  .hero-bg-img {
+    object-position: left center !important;
+  }
+}
+
+
