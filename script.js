@@ -32,6 +32,7 @@
 
   function openMobileMenu() {
     hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
     mobileMenu.classList.add('open');
     mobileMenu.style.display = 'flex';
     overlayBg.classList.add('active');
@@ -41,6 +42,7 @@
 
   function closeMobileMenu() {
     hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
     mobileMenu.classList.remove('open');
     header.classList.remove('menu-open');
     document.body.style.overflow = '';
@@ -454,6 +456,559 @@
     });
   }
 
+  /* ============================================================
+     COMING SOON TOAST NOTIFICATION
+     ============================================================ */
+  function showComingSoonToast(pageName) {
+    let toast = document.getElementById('luxury-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'luxury-toast';
+      toast.className = 'luxury-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = `The "${pageName}" page is coming soon.`;
+    toast.classList.add('show');
+    
+    if (toast.timeoutId) {
+      clearTimeout(toast.timeoutId);
+    }
+    
+    toast.timeoutId = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-coming-soon]');
+    if (link) {
+      e.preventDefault();
+      let pageName = link.getAttribute('data-coming-soon-title') || link.textContent.trim();
+      if (!pageName || pageName === 'meow!') {
+        const img = link.querySelector('img');
+        if (img && img.alt) {
+          pageName = img.alt;
+        } else {
+          pageName = 'collection';
+        }
+      }
+      showComingSoonToast(pageName);
+    }
+  });
+
+  /* ============================================================
+     SMOOTH SCROLL FOR BOOKING SECTION LINKS
+     ============================================================ */
+  document.querySelectorAll('a[href="#booking-section"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.getElementById('booking-section');
+      if (target) {
+        // Close mobile menu if it is open
+        if (typeof closeMobileMenu === 'function') {
+          closeMobileMenu();
+        }
+        target.scrollIntoView({
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  /* ============================================================
+     LIVE CHAT WIDGET LOGIC
+     ============================================================ */
+  function isConsultantOnline() {
+    const now = new Date();
+    // Convert to IST (UTC + 5:30)
+    const utcHour = now.getUTCHours();
+    const utcMinute = now.getUTCMinutes();
+    let istHour = utcHour + 5;
+    let istMinute = utcMinute + 30;
+    if (istMinute >= 60) {
+      istHour += 1;
+      istMinute -= 60;
+    }
+    istHour = istHour % 24;
+    
+    // Online from 10:00 AM to 7:00 PM IST
+    return istHour >= 10 && istHour < 19;
+  }
+
+  function renderPreChatForm() {
+    return `
+      <form class="chat-form" id="chat-online-form">
+        <div class="chat-form-field">
+          <label for="chat-name">Name</label>
+          <input type="text" id="chat-name" class="chat-input" placeholder="Your name" required />
+        </div>
+        <div class="chat-form-field">
+          <label for="chat-email">Email</label>
+          <input type="email" id="chat-email" class="chat-input" placeholder="Your email address" required />
+        </div>
+        <div class="chat-form-field">
+          <label for="chat-help">What can we help you with?</label>
+          <select id="chat-help" class="chat-select" required>
+            <option value="" disabled selected>Select an option</option>
+            <option value="Product Inquiry">Product Inquiry</option>
+            <option value="Custom Design">Custom Design</option>
+            <option value="Welded Forever Appointment">Welded Forever Appointment</option>
+            <option value="Order Status">Order Status</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <button type="submit" class="chat-submit-btn">Start Chat</button>
+      </form>
+    `;
+  }
+
+  function renderOnlineSuccess() {
+    return `
+      <div class="chat-success-state">
+        <svg class="chat-success-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h4 class="chat-success-title">Thank You</h4>
+        <p class="chat-success-desc">A consultant will join shortly. In the meantime, here are some quick links:</p>
+        
+        <div class="chat-quick-links-title">Quick Links</div>
+        <div class="chat-quick-links-list">
+          <button class="chat-quick-link-btn" id="link-chat-book">Book a Studio Appointment</button>
+          <button class="chat-quick-link-btn" id="link-chat-browse">Browse Collections</button>
+          <button class="chat-quick-link-btn" id="link-chat-tryon">Virtual Try-On</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderOfflineForm() {
+    return `
+      <form class="chat-form" id="chat-offline-form-el">
+        <p class="chat-offline-desc">We're currently offline. Leave a message and we'll respond within 24 hours.</p>
+        <div class="chat-form-field">
+          <label for="chat-off-name">Name</label>
+          <input type="text" id="chat-off-name" class="chat-input" placeholder="Your name" required />
+        </div>
+        <div class="chat-form-field">
+          <label for="chat-off-email">Email</label>
+          <input type="email" id="chat-off-email" class="chat-input" placeholder="Your email address" required />
+        </div>
+        <div class="chat-form-field">
+          <label for="chat-off-msg">Message</label>
+          <textarea id="chat-off-msg" class="chat-textarea" placeholder="How can we help you?" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="chat-submit-btn">Send Message</button>
+      </form>
+    `;
+  }
+
+  function renderOfflineSuccess() {
+    return `
+      <div class="chat-success-state">
+        <svg class="chat-success-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5M12 22.25V19" />
+        </svg>
+        <h4 class="chat-success-title">Message Sent</h4>
+        <p class="chat-success-desc">Thank you. We have received your message and will respond within 24 hours.</p>
+        
+        <div class="chat-quick-links-title">Quick Links</div>
+        <div class="chat-quick-links-list">
+          <button class="chat-quick-link-btn" id="link-chat-book">Book a Studio Appointment</button>
+          <button class="chat-quick-link-btn" id="link-chat-browse">Browse Collections</button>
+          <button class="chat-quick-link-btn" id="link-chat-tryon">Virtual Try-On</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function setupQuickLinkListeners() {
+    const btnBook = document.getElementById('link-chat-book');
+    const btnBrowse = document.getElementById('link-chat-browse');
+    const btnTryOn = document.getElementById('link-chat-tryon');
+    
+    if (btnBook) {
+      btnBook.addEventListener('click', () => {
+        const panel = document.getElementById('chat-panel');
+        if (panel) {
+          panel.classList.remove('open');
+          localStorage.setItem('abhushan_chat_open', 'false');
+        }
+        const target = document.getElementById('booking-section');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.href = 'index.html#booking-section';
+        }
+      });
+    }
+    
+    if (btnBrowse) {
+      btnBrowse.addEventListener('click', () => {
+        const panel = document.getElementById('chat-panel');
+        if (panel) {
+          panel.classList.remove('open');
+          localStorage.setItem('abhushan_chat_open', 'false');
+        }
+        const target = document.getElementById('section-category-grid');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.location.href = 'index.html#section-category-grid';
+        }
+      });
+    }
+    
+    if (btnTryOn) {
+      btnTryOn.addEventListener('click', () => {
+        if (typeof showComingSoonToast === 'function') {
+          showComingSoonToast('Virtual Try-On');
+        } else {
+          alert('Virtual Try-On feature is coming soon.');
+        }
+      });
+    }
+  }
+
+  function setupFormListeners() {
+    const onlineForm = document.getElementById('chat-online-form');
+    const offlineForm = document.getElementById('chat-offline-form-el');
+    
+    if (onlineForm) {
+      onlineForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        localStorage.setItem('abhushan_chat_submitted', 'true');
+        const body = document.getElementById('chat-panel-body');
+        if (body) {
+          body.innerHTML = renderOnlineSuccess();
+          setupQuickLinkListeners();
+        }
+      });
+    }
+    
+    if (offlineForm) {
+      offlineForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        localStorage.setItem('abhushan_chat_offline_submitted', 'true');
+        const body = document.getElementById('chat-panel-body');
+        if (body) {
+          body.innerHTML = renderOfflineSuccess();
+          setupQuickLinkListeners();
+        }
+      });
+    }
+    
+    setupQuickLinkListeners();
+  }
+
+  function injectChatWidget() {
+    if (document.getElementById('chat-widget-container')) return;
+
+    const container = document.createElement('div');
+    container.id = 'chat-widget-container';
+    
+    const online = isConsultantOnline();
+    const isSubmitted = localStorage.getItem('abhushan_chat_submitted') === 'true';
+    const isOfflineSubmitted = localStorage.getItem('abhushan_chat_offline_submitted') === 'true';
+    
+    let bodyContent = '';
+    if (online) {
+      bodyContent = isSubmitted ? renderOnlineSuccess() : renderPreChatForm();
+    } else {
+      bodyContent = isOfflineSubmitted ? renderOfflineSuccess() : renderOfflineForm();
+    }
+    
+    const chatIconSvg = `
+      <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+      </svg>
+    `;
+    
+    container.innerHTML = `
+      <button class="chat-widget-trigger pulse-active" id="chat-trigger-btn" aria-label="Open Chat with Abhushan">
+        ${chatIconSvg}
+      </button>
+      <div class="chat-widget-panel" id="chat-panel">
+        <div class="chat-panel-header">
+          <div class="chat-header-info">
+            <h3 class="chat-panel-title">Chat with Abhushan</h3>
+            <p class="chat-panel-subtitle">Our jewelry consultants are here to help</p>
+          </div>
+          <button class="chat-panel-close-btn" id="chat-close-btn" aria-label="Close Chat">&times;</button>
+        </div>
+        <div class="chat-panel-body" id="chat-panel-body">
+          ${bodyContent}
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(container);
+    
+    const triggerBtn = document.getElementById('chat-trigger-btn');
+    const panel = document.getElementById('chat-panel');
+    const closeBtn = document.getElementById('chat-close-btn');
+    
+    if (localStorage.getItem('abhushan_chat_open') === 'true') {
+      if (panel) panel.classList.add('open');
+      if (triggerBtn) triggerBtn.classList.remove('pulse-active');
+    }
+    
+    if (triggerBtn && panel) {
+      triggerBtn.addEventListener('click', () => {
+        panel.classList.toggle('open');
+        triggerBtn.classList.remove('pulse-active');
+        const isOpen = panel.classList.contains('open');
+        localStorage.setItem('abhushan_chat_open', isOpen ? 'true' : 'false');
+      });
+    }
+    
+    if (closeBtn && panel) {
+      closeBtn.addEventListener('click', () => {
+        panel.classList.remove('open');
+        localStorage.setItem('abhushan_chat_open', 'false');
+      });
+    }
+    
+    setupFormListeners();
+  }
+
+  /* ============================================================
+     SEARCH FUNCTIONALITY LOGIC
+     ============================================================ */
+  const searchCatalog = [
+    {
+      name: "Threadbare Ring",
+      price: "₹3,999",
+      category: "Rings",
+      image: "images/_Product Cards/prod_ring1.png",
+      url: "product-threadbare-ring.html",
+      keywords: ["ring", "threadbare", "thin", "band", "minimalist", "18k", "gold", "stacking"]
+    },
+    {
+      name: "Hammered Hoop Earring",
+      price: "₹5,299",
+      category: "Earrings",
+      image: "images/_Product Cards/prod_earring1.png",
+      url: "product-hammered-hoop.html",
+      keywords: ["earring", "hammered", "hoop", "circular", "18k", "gold"]
+    },
+    {
+      name: "Greco Lariat",
+      price: "₹32,999",
+      category: "Necklaces",
+      image: "images/_Product Cards/prod_necklace1.png",
+      url: "product-greco-lariat.html",
+      keywords: ["necklace", "lariat", "greco", "chain", "pendant", "22k", "gold", "emerald"]
+    },
+    {
+      name: "Sweet Nothing Bracelet",
+      price: "₹11,299",
+      category: "Bracelets",
+      image: "images/_Product Cards/prod_bracelet1.png",
+      url: "product-sweet-nothing.html",
+      keywords: ["bracelet", "sweet", "nothing", "chain", "thin", "18k", "gold"]
+    },
+    {
+      name: "Tomboy Ring",
+      price: "₹21,999",
+      category: "Rings",
+      image: "images/_Product Cards/prod_ring2.png",
+      url: "product-tomboy-ring.html",
+      keywords: ["ring", "tomboy", "bold", "matte", "brushed", "18k", "gold"]
+    }
+  ];
+
+  function injectSearchWidget() {
+    if (document.getElementById('search-overlay')) return;
+
+    // 1. Inject trigger icon in nav-top-right
+    const navTopRight = document.querySelector('.nav-top-right');
+    if (navTopRight) {
+      const searchTrigger = document.createElement('button');
+      searchTrigger.id = 'search-trigger-btn-header';
+      searchTrigger.className = 'nav-action-btn-tiffany';
+      searchTrigger.setAttribute('aria-label', 'Search Catalog');
+      searchTrigger.innerHTML = `
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      `;
+      navTopRight.appendChild(searchTrigger);
+    }
+
+    // 2. Inject overlay markup in document.body
+    const overlay = document.createElement('div');
+    overlay.id = 'search-overlay';
+    overlay.className = 'search-overlay-tiffany';
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('role', 'dialog');
+    overlay.innerHTML = `
+      <div class="search-overlay-inner-tiffany">
+        <div class="search-overlay-header-tiffany">
+          <div class="search-input-wrap-tiffany">
+            <svg class="search-input-icon-tiffany" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" id="search-input-field" class="search-input-field-tiffany" placeholder="Search for rings, necklaces, collections..." autocomplete="off" />
+          </div>
+          <button class="search-overlay-close-btn" id="search-overlay-close-btn" aria-label="Close search">&times;</button>
+        </div>
+        <div class="search-overlay-body-tiffany">
+          <!-- Popular Searches Section -->
+          <div class="popular-searches-section-tiffany" id="popular-searches">
+            <h4 class="search-section-title-tiffany">Popular Searches</h4>
+            <div class="popular-tags-tiffany">
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Emerald Rings">Emerald Rings</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Welded Forever">Welded Forever</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Bridal Sets">Bridal Sets</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Gold Chains">Gold Chains</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Custom Lockets">Custom Lockets</button>
+            </div>
+          </div>
+          <!-- Search Results Dropdown -->
+          <div class="search-results-section-tiffany" id="search-results" style="display: none;">
+            <h4 class="search-section-title-tiffany">Search Results</h4>
+            <div class="search-results-list-tiffany" id="search-results-list">
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    // 3. Bind event listeners
+    const triggerBtn = document.getElementById('search-trigger-btn-header');
+    const closeBtn = document.getElementById('search-overlay-close-btn');
+    const inputField = document.getElementById('search-input-field');
+    const resultsContainer = document.getElementById('search-results');
+    const resultsList = document.getElementById('search-results-list');
+    const popularSection = document.getElementById('popular-searches');
+
+    function openSearch() {
+      overlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        if (inputField) inputField.focus();
+      }, 100);
+    }
+
+    function closeSearch() {
+      overlay.classList.remove('open');
+      document.body.style.overflow = '';
+      if (inputField) {
+        inputField.value = '';
+      }
+      if (resultsContainer) resultsContainer.style.display = 'none';
+      if (popularSection) popularSection.style.display = 'flex';
+    }
+
+    if (triggerBtn) {
+      triggerBtn.addEventListener('click', openSearch);
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeSearch);
+    }
+
+    // Escape Key Close
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) {
+        closeSearch();
+      }
+    });
+
+    // Debounced search logic
+    let searchDebounceTimer;
+    if (inputField) {
+      inputField.addEventListener('input', (e) => {
+        clearTimeout(searchDebounceTimer);
+        const query = e.target.value.trim().toLowerCase();
+        searchDebounceTimer = setTimeout(() => {
+          performQuerySearch(query);
+        }, 300);
+      });
+    }
+
+    // Popular pills clicks
+    document.querySelectorAll('.popular-tag-pill-tiffany').forEach(pill => {
+      pill.addEventListener('click', () => {
+        const query = pill.getAttribute('data-query');
+        if (inputField) {
+          inputField.value = query;
+          performQuerySearch(query.toLowerCase());
+        }
+      });
+    });
+
+    function performQuerySearch(query) {
+      if (query.length === 0) {
+        if (resultsContainer) resultsContainer.style.display = 'none';
+        if (popularSection) popularSection.style.display = 'flex';
+        return;
+      }
+
+      if (popularSection) popularSection.style.display = 'none';
+      if (resultsContainer) resultsContainer.style.display = 'flex';
+
+      // Match products in catalog
+      const matches = searchCatalog.filter(p => {
+        return (
+          p.name.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query) ||
+          p.keywords.some(k => k.includes(query))
+        );
+      });
+
+      renderSearchResults(matches);
+    }
+
+    function renderSearchResults(matches) {
+      if (!resultsList) return;
+      resultsList.innerHTML = '';
+
+      if (matches.length === 0) {
+        resultsList.innerHTML = `
+          <div class="search-no-results-tiffany">
+            No results found. Try "rings", "gold", or "wedding".
+          </div>
+        `;
+        return;
+      }
+
+      matches.forEach(m => {
+        const item = document.createElement('a');
+        item.href = m.url;
+        item.className = 'search-result-item-tiffany';
+        item.innerHTML = `
+          <img class="search-result-thumb-tiffany" src="${m.image}" alt="${m.name}" />
+          <div class="search-result-info-tiffany">
+            <span class="search-result-category-tiffany">${m.category}</span>
+            <span class="search-result-name-tiffany">${m.name}</span>
+            <span class="search-result-price-tiffany">${m.price}</span>
+          </div>
+        `;
+        item.addEventListener('click', () => {
+          closeSearch();
+        });
+        resultsList.appendChild(item);
+      });
+    }
+  }
+
+  function initApp() {
+    injectChatWidget();
+    injectSearchWidget();
+  }
+
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  }
+
   console.log('%c✦ ABHUSHAN · Ahmedabad, Gujarat, India ✦', 'color:#C08B5D;font-family:Georgia,serif;font-size:14px;');
 
 })();
+
