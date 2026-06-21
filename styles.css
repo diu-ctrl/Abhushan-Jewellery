@@ -4553,3 +4553,27 @@ textarea:focus-visible {
 
 
 
+
+/* Added for brand voice copy updates */
+.category-desc-tiffany {
+  display: block;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+  text-transform: none;
+  font-weight: normal;
+  opacity: 0.85;
+  letter-spacing: normal;
+}
+.product-desc-tiffany {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
