@@ -4577,3 +4577,116 @@ textarea:focus-visible {
   line-height: 1.4;
   opacity: 0.9;
 }
+
+
+/* ============================================================
+   OUR STORY SECTION
+   ============================================================ */
+.section-story-tiffany {
+  background-color: var(--color-bg-blush);
+  padding: 120px var(--space-xl);
+  max-width: var(--max-width);
+  margin: 0 auto;
+  border-top: 1px solid var(--color-border);
+}
+
+.story-container-tiffany {
+  display: grid;
+  grid-template-columns: 42% 50%;
+  gap: 8%;
+  align-items: center;
+}
+
+/* Left Column: Image */
+.story-image-col-tiffany {
+  position: relative;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-gold);
+  border-radius: 2px;
+}
+
+.story-img-tiffany {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+/* Right Column: Text */
+.story-text-col-tiffany {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.story-eyebrow-tiffany {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--color-gold);
+  margin-bottom: var(--space-xs);
+}
+
+.story-title-tiffany {
+  font-family: var(--font-serif);
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--color-text);
+  margin: 0 0 var(--space-md) 0;
+  line-height: 1.25;
+}
+
+.story-body-tiffany p {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--color-text-light);
+  margin-bottom: var(--space-md);
+}
+
+.story-signature-tiffany {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--color-text);
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.btn-story-link-tiffany {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 2px solid var(--color-gold);
+  padding-bottom: 4px;
+  transition: color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.btn-story-link-tiffany:hover {
+  color: var(--color-gold);
+  border-color: var(--color-text);
+}
+
+/* Responsive Stack */
+@media (max-width: 768px) {
+  .section-story-tiffany {
+    padding: 80px var(--space-lg);
+  }
+  .story-container-tiffany {
+    grid-template-columns: 1fr;
+    gap: var(--space-xl);
+  }
+  .story-image-col-tiffany {
+    max-width: 420px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
