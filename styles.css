@@ -4846,3 +4846,300 @@ textarea:focus-visible {
     text-align: center;
   }
 }
+
+
+/* ============================================================
+   SOPHISTICATED MICRO-INTERACTIONS & HOVER EFFECTS
+   ============================================================ */
+
+/* Navigation Links Center-Out Underline */
+.nav-menu-links .nav-link {
+  position: relative;
+}
+.nav-menu-links .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s var(--ease);
+}
+.nav-menu-links .nav-link:hover::after {
+  transform: scaleX(1);
+}
+.nav-menu-links .nav-link:hover {
+  color: var(--color-gold) !important;
+}
+
+/* Product Card Hover: Image Zoom, Name Underline, Shadow Lift */
+.product-card {
+  position: relative;
+  transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease) !important;
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(50, 35, 37, 0.08) !important;
+}
+.product-image-wrap {
+  position: relative;
+  overflow: hidden;
+}
+.product-image-wrap img {
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+.product-card:hover .product-image-wrap img {
+  transform: scale(1.05);
+}
+
+/* Quick View Overlay Button */
+.quick-view-overlay-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--color-text);
+  border: 1px solid var(--color-gold);
+  padding: 10px 20px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease), background-color 0.3s var(--ease), color 0.3s var(--ease);
+  z-index: 10;
+  white-space: nowrap;
+}
+.product-card:hover .quick-view-overlay-btn {
+  opacity: 1;
+}
+.quick-view-overlay-btn:hover {
+  background-color: var(--color-gold);
+  color: var(--color-white);
+}
+
+/* Product Name Underline (Left-to-Right) */
+.product-name {
+  position: relative;
+  display: inline-block;
+}
+.product-name::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-gold);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease);
+}
+.product-card:hover .product-name::after {
+  transform: scaleX(1);
+}
+
+/* Category Grid Hover Zoom, Overlay & Label Shift */
+.category-img-wrap-tiffany {
+  position: relative;
+  overflow: hidden;
+}
+.category-img-wrap-tiffany img {
+  transition: transform 0.4s var(--ease) !important;
+}
+.category-col-tiffany:hover .category-img-wrap-tiffany img {
+  transform: scale(1.08);
+}
+.category-img-wrap-tiffany::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-gold);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  pointer-events: none;
+  z-index: 2;
+}
+.category-col-tiffany:hover .category-img-wrap-tiffany::after {
+  opacity: 0.15;
+}
+.category-label-tiffany {
+  display: block;
+  transition: transform 0.4s var(--ease), color 0.4s var(--ease) !important;
+}
+.category-col-tiffany:hover .category-label-tiffany {
+  transform: translateY(-4px);
+  color: var(--color-gold) !important;
+}
+
+/* Button Refined Hover & Active State */
+.btn-booking-submit, .btn-directions-tiffany, .btn-add-to-bag-tiffany, .btn-404-primary-tiffany, .chat-widget-submit-btn {
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease), color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.btn-booking-submit:hover, .btn-directions-tiffany:hover, .btn-add-to-bag-tiffany:hover, .btn-404-primary-tiffany:hover, .chat-widget-submit-btn:hover {
+  background-color: #b09159;
+  transform: translateY(-1px);
+}
+.btn-studio-book-tiffany, .btn-book-appointment-tiffany, .btn-404-secondary-tiffany {
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease), color var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.btn-studio-book-tiffany:hover, .btn-book-appointment-tiffany:hover, .btn-404-secondary-tiffany:hover {
+  background-color: var(--color-gold);
+  color: var(--color-text) !important;
+  border-color: var(--color-gold);
+  transform: translateY(-1px);
+}
+button:active, .btn-booking-submit:active, .btn-directions-tiffany:active, .btn-add-to-bag-tiffany:active, .btn-studio-book-tiffany:active, .btn-book-appointment-tiffany:active, .btn-404-primary-tiffany:active, .btn-404-secondary-tiffany:active, .chat-widget-submit-btn:active {
+  transform: scale(0.98) !important;
+}
+
+/* Ticker Pause on Hover */
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+/* Booking Form Floating Labels & Focus Borders */
+.booking-field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.booking-field label {
+  position: absolute;
+  left: 12px;
+  top: 11px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: transform 0.3s var(--ease), font-size 0.3s var(--ease), color 0.3s var(--ease);
+  transform-origin: left top;
+  pointer-events: none;
+  background-color: var(--color-white);
+  padding: 0 4px;
+  z-index: 5;
+  color: var(--color-text-light);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.booking-field input,
+.booking-field select,
+.booking-field textarea {
+  transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease) !important;
+  z-index: 1;
+}
+.booking-field input:focus,
+.booking-field select:focus,
+.booking-field textarea:focus {
+  border-color: var(--color-gold) !important;
+  box-shadow: 0 0 8px rgba(192, 139, 93, 0.15) !important;
+  outline: none;
+}
+.booking-field.focused label,
+.booking-field.has-value label {
+  transform: translateY(-20px) scale(0.85);
+  color: var(--color-gold);
+  font-weight: 600;
+  font-size: 10px;
+}
+
+/* Booking Form Success & Loading Spinner */
+.booking-submit-wrap {
+  position: relative;
+}
+.btn-booking-submit {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+}
+.btn-booking-submit .spinner-icon {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-white);
+  animation: buttonSpin 0.8s linear infinite;
+  display: inline-block;
+}
+@keyframes buttonSpin {
+  to { transform: rotate(360deg); }
+}
+.booking-success-message {
+  display: none;
+  text-align: center;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  color: var(--color-gold);
+  line-height: 1.5;
+  padding: var(--space-xl) 0;
+  animation: successFadeIn 0.5s var(--ease) forwards;
+}
+@keyframes successFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll Reveal Animations */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.reveal-on-scroll.reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu-links .nav-link::after,
+  .product-card,
+  .product-image-wrap img,
+  .quick-view-overlay-btn,
+  .product-name::after,
+  .category-img-wrap-tiffany img,
+  .category-img-wrap-tiffany::after,
+  .category-label-tiffany,
+  .btn-booking-submit,
+  .btn-directions-tiffany,
+  .btn-add-to-bag-tiffany,
+  .btn-404-primary-tiffany,
+  .btn-studio-book-tiffany,
+  .btn-book-appointment-tiffany,
+  .btn-404-secondary-tiffany,
+  .chat-widget-submit-btn,
+  .booking-field label,
+  .reveal-on-scroll {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .product-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .product-card:hover .product-image-wrap img,
+  .category-col-tiffany:hover .category-img-wrap-tiffany img {
+    transform: none !important;
+  }
+  .category-col-tiffany:hover .category-label-tiffany {
+    transform: none !important;
+  }
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .booking-field.focused label,
+  .booking-field.has-value label {
+    transform: translate(0, -20px) !important;
+  }
+}

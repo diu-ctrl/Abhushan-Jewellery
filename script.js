@@ -998,6 +998,7 @@
   function initApp() {
     injectChatWidget();
     injectSearchWidget();
+    initMicroInteractions();
   }
 
   if (typeof window !== 'undefined') {
@@ -1005,6 +1006,162 @@
       document.addEventListener('DOMContentLoaded', initApp);
     } else {
       initApp();
+    }
+  }
+
+
+  // Sophisticated Micro-Interactions & Hover Effects
+  function initMicroInteractions() {
+    // 1. Inject Quick View Button into Product Cards
+    const productWraps = document.querySelectorAll('.product-image-wrap');
+    productWraps.forEach(wrap => {
+      if (!wrap.querySelector('.quick-view-overlay-btn')) {
+        const btn = document.createElement('div');
+        btn.className = 'quick-view-overlay-btn';
+        btn.textContent = 'Quick View';
+        wrap.appendChild(btn);
+      }
+    });
+
+    // 2. Parallax Scrolling for Split Editorial Images
+    const parallaxImages = document.querySelectorAll('.split-img-col-tiffany img');
+    if (parallaxImages.length > 0 && window.IntersectionObserver) {
+      window.addEventListener('scroll', () => {
+        // Prevent execution if prefers-reduced-motion is active
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        
+        const scrollY = window.scrollY;
+        const viewportHeight = window.innerHeight;
+        
+        parallaxImages.forEach(img => {
+          const rect = img.getBoundingClientRect();
+          const imgTop = rect.top + scrollY;
+          // Calculate offset only if visible in viewport
+          if (rect.top < viewportHeight && rect.bottom > 0) {
+            const relativeOffset = (scrollY + viewportHeight / 2 - imgTop) * 0.08;
+            const boundedOffset = Math.max(-25, Math.min(25, relativeOffset));
+            img.style.transform = `translateY(${boundedOffset}px)`;
+          }
+        });
+      });
+    }
+
+    // 3. Booking Form Floating Labels & Focus States
+    const bookingForm = document.getElementById('booking-form');
+    if (bookingForm) {
+      const inputs = bookingForm.querySelectorAll('input, select, textarea');
+      
+      const checkVal = (el) => {
+        const parent = el.closest('.booking-field');
+        if (!parent) return;
+        if (el.value && el.value.trim() !== '') {
+          parent.classList.add('has-value');
+        } else {
+          parent.classList.remove('has-value');
+        }
+      };
+
+      inputs.forEach(input => {
+        const parent = input.closest('.booking-field');
+        if (!parent) return;
+
+        // Focus event
+        input.addEventListener('focus', () => {
+          parent.classList.add('focused');
+        });
+
+        // Blur event
+        input.addEventListener('blur', () => {
+          parent.classList.remove('focused');
+          checkVal(input);
+        });
+
+        // Input/Change event
+        input.addEventListener('input', () => checkVal(input));
+        input.addEventListener('change', () => checkVal(input));
+
+        // Initial check
+        checkVal(input);
+      });
+
+      // 4. Booking Form Submit Loading Spinner & Success State
+      bookingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('booking-submit-btn');
+        if (!submitBtn) return;
+        
+        const originalHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-icon"></span> Processing...';
+        
+        setTimeout(() => {
+          submitBtn.innerHTML = '&#10003; Confirmed';
+          submitBtn.style.backgroundColor = '#4caf50';
+          submitBtn.style.borderColor = '#4caf50';
+          
+          setTimeout(() => {
+            // Fade out form and fade in success message
+            bookingForm.style.transition = 'opacity 0.4s ease';
+            bookingForm.style.opacity = '0';
+            
+            setTimeout(() => {
+              bookingForm.style.display = 'none';
+              
+              // Create success message element
+              const successMsg = document.createElement('div');
+              successMsg.className = 'booking-success-message';
+              successMsg.style.display = 'block';
+              successMsg.innerHTML = `
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#C9A96E" stroke-width="1.5" style="margin: 0 auto 15px; display: block;">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <p>Your appointment request has been received.</p>
+                <p style="font-size: 14px; color: var(--color-text-light); margin-top: 5px;">We'll confirm within 2 hours.</p>
+              `;
+              
+              const bookingCard = bookingForm.closest('.booking-card');
+              if (bookingCard) {
+                bookingCard.appendChild(successMsg);
+              }
+            }, 400);
+          }, 800);
+        }, 1200);
+      });
+    }
+
+    // 5. Scroll Reveal Intersection Observer (staggered delay)
+    if (window.IntersectionObserver) {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-active');
+            
+            // Stagger animation for child items
+            const childSelectors = '.product-card, .category-col-tiffany, .experience-col-tiffany, .studio-photo-col-tiffany';
+            const children = entry.target.querySelectorAll(childSelectors);
+            children.forEach((child, idx) => {
+              // Only apply transforms if preferences let us
+              if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                child.style.transition = 'opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                child.style.transitionDelay = `${idx * 0.1}s`;
+              }
+            });
+            
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      // Observe major sections on storefront
+      const sectionsToObserve = document.querySelectorAll(
+        '.section-category-grid, .section-split-editorial-tiffany, .section-wide-portrait-tiffany, .section-products-tiffany, .section-testimonials-tiffany, .section-experience-tiffany, .section-studio-tiffany, .booking-section'
+      );
+      
+      sectionsToObserve.forEach(sec => {
+        sec.classList.add('reveal-on-scroll');
+        revealObserver.observe(sec);
+      });
     }
   }
 
