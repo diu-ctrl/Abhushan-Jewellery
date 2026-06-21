@@ -1061,7 +1061,7 @@
     injectChatWidget();
     injectSearchWidget();
     initMicroInteractions();
-    initVirtualTryOn();
+    // VTO is handled inline on product detail pages
   }
   if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
