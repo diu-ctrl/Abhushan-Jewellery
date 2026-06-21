@@ -717,23 +717,46 @@
       bodyContent = isOfflineSubmitted ? renderOfflineSuccess() : renderOfflineForm();
     }
     
+    // Online status indicator dot
+    const statusDot = online
+      ? `<span class="chat-status-dot online" title="Online"></span>`
+      : `<span class="chat-status-dot offline" title="Offline"></span>`;
+
+    const statusLabel = online
+      ? `<span class="chat-status-label">Available now · 10am – 7pm IST</span>`
+      : `<span class="chat-status-label">Currently offline · Leave a message</span>`;
+
     const chatIconSvg = `
-      <svg viewBox="0 0 24 24">
-        <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+    `;
+
+    const closeIconSvg = `
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     `;
     
     container.innerHTML = `
-      <button class="chat-widget-trigger pulse-active" id="chat-trigger-btn" aria-label="Open Chat with Abhushan">
-        ${chatIconSvg}
+      <button class="chat-widget-trigger pulse-active" id="chat-trigger-btn" aria-label="Open Chat with Abhushan" aria-expanded="false" aria-controls="chat-panel">
+        <span class="chat-trigger-icon">${chatIconSvg}</span>
+        <span class="chat-trigger-close-icon">${closeIconSvg}</span>
       </button>
-      <div class="chat-widget-panel" id="chat-panel">
+      <div class="chat-widget-panel" id="chat-panel" role="dialog" aria-modal="true" aria-label="Chat with Abhushan" aria-hidden="true">
         <div class="chat-panel-header">
           <div class="chat-header-info">
-            <h3 class="chat-panel-title">Chat with Abhushan</h3>
+            <div class="chat-header-top-row">
+              ${statusDot}
+              <h3 class="chat-panel-title">Chat with Abhushan</h3>
+            </div>
             <p class="chat-panel-subtitle">Our jewelry consultants are here to help</p>
+            <div class="chat-status-row">${statusLabel}</div>
           </div>
-          <button class="chat-panel-close-btn" id="chat-close-btn" aria-label="Close Chat">&times;</button>
+          <button class="chat-panel-close-btn" id="chat-close-btn" aria-label="Close Chat">
+            ${closeIconSvg}
+          </button>
         </div>
         <div class="chat-panel-body" id="chat-panel-body">
           ${bodyContent}
@@ -746,30 +769,66 @@
     const triggerBtn = document.getElementById('chat-trigger-btn');
     const panel = document.getElementById('chat-panel');
     const closeBtn = document.getElementById('chat-close-btn');
+
+    function openPanel() {
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+      triggerBtn.classList.remove('pulse-active');
+      triggerBtn.setAttribute('aria-expanded', 'true');
+      triggerBtn.classList.add('is-open');
+      localStorage.setItem('abhushan_chat_open', 'true');
+      // Focus first input if form present
+      setTimeout(() => {
+        const first = panel.querySelector('input, select, textarea');
+        if (first) first.focus();
+      }, 400);
+    }
+
+    function closePanel() {
+      panel.classList.remove('open');
+      panel.setAttribute('aria-hidden', 'true');
+      triggerBtn.setAttribute('aria-expanded', 'false');
+      triggerBtn.classList.remove('is-open');
+      localStorage.setItem('abhushan_chat_open', 'false');
+    }
     
+    // Restore state from localStorage
     if (localStorage.getItem('abhushan_chat_open') === 'true') {
-      if (panel) panel.classList.add('open');
-      if (triggerBtn) triggerBtn.classList.remove('pulse-active');
+      panel.classList.add('open');
+      panel.setAttribute('aria-hidden', 'false');
+      triggerBtn.classList.remove('pulse-active');
+      triggerBtn.setAttribute('aria-expanded', 'true');
+      triggerBtn.classList.add('is-open');
     }
     
     if (triggerBtn && panel) {
       triggerBtn.addEventListener('click', () => {
-        panel.classList.toggle('open');
-        triggerBtn.classList.remove('pulse-active');
-        const isOpen = panel.classList.contains('open');
-        localStorage.setItem('abhushan_chat_open', isOpen ? 'true' : 'false');
+        if (panel.classList.contains('open')) {
+          closePanel();
+        } else {
+          openPanel();
+        }
       });
     }
     
     if (closeBtn && panel) {
-      closeBtn.addEventListener('click', () => {
-        panel.classList.remove('open');
-        localStorage.setItem('abhushan_chat_open', 'false');
-      });
+      closeBtn.addEventListener('click', closePanel);
     }
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && panel.classList.contains('open')) closePanel();
+    });
+
+    // Expose openChatWidget globally for inline onclick handlers on product pages
+    window.openChatWidget = function(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      openPanel();
+    };
     
     setupFormListeners();
   }
+
 
   /* ============================================================
      SEARCH FUNCTIONALITY LOGIC
@@ -1723,6 +1782,705 @@
       document.body.removeChild(link);
     }
   }
+
+  // ============================================================
+  //  EMI / FINANCING MODULE
+  //  Vanilla JS · Auto-detects price · Indian market
+  // ============================================================
+  (function initEMI() {
+
+    // Only run on product detail pages
+    var priceEl = document.querySelector('.product-price-detail-tiffany');
+    if (!priceEl) return;
+
+    // ── Parse price from the DOM (handles ₹3,999 / ₹32,999 formats)
+    function parseINR(str) {
+      return parseInt((str || '').replace(/[^0-9]/g, ''), 10) || 0;
+    }
+
+    // ── Format INR with commas (Indian number system)
+    function formatINR(n) {
+      var s = Math.ceil(n).toString();
+      // Indian grouping: last 3, then groups of 2
+      if (s.length <= 3) return '\u20b9' + s;
+      var last3 = s.slice(-3);
+      var rest = s.slice(0, -3);
+      rest = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+      return '\u20b9' + rest + ',' + last3;
+    }
+
+    var totalPrice = parseINR(priceEl.textContent);
+    if (!totalPrice) return;
+
+    // ── Compute tenures
+    var tenures = [3, 6, 9, 12];
+    var emiByTenure = {};
+    tenures.forEach(function(t) {
+      emiByTenure[t] = Math.ceil(totalPrice / t);
+    });
+    var monthly12 = emiByTenure[12];
+
+    // ── SVG icons
+    var ICON_INFO   = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8" stroke-linecap="round" stroke-width="3"/><line x1="12" y1="12" x2="12" y2="16"/></svg>';
+    var ICON_CHEV   = '<svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>';
+    var ICON_CHECK  = '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+    var ICON_SHIELD = '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+    var ICON_CLOCK  = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    var ICON_ARR    = '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+    // ── Build tenure table rows
+    function buildTenureRows() {
+      return tenures.map(function(t) {
+        var amt = emiByTenure[t];
+        var isHighlight = (t === 12);
+        var badge = isHighlight
+          ? '<span class="emi-tenure-badge">Most Popular</span>'
+          : '';
+        return (
+          '<tr class="' + (isHighlight ? 'emi-tenure-highlight' : '') + '">' +
+            '<td>' + t + ' Months' + badge + '</td>' +
+            '<td>0%</td>' +
+            '<td>Nil</td>' +
+            '<td>' + formatINR(amt) + '/mo</td>' +
+          '</tr>'
+        );
+      }).join('');
+    }
+
+    // ── Build the full EMI panel HTML
+    function buildEMIPanel() {
+      return (
+        '<div class="emi-panel" id="emi-panel" aria-hidden="true">' +
+          '<div class="emi-panel-inner">' +
+
+            // Headline
+            '<div>' +
+              '<p class="emi-panel-headline">Pay in easy instalments at 0% interest</p>' +
+              '<p class="emi-panel-subline">No processing fees. No hidden charges. Instant approval.</p>' +
+            '</div>' +
+
+            // Trust badges
+            '<div class="emi-trust-strip">' +
+              '<span class="emi-trust-badge">' + ICON_CHECK  + '0% Interest</span>' +
+              '<span class="emi-trust-badge">' + ICON_SHIELD + 'No Hidden Fees</span>' +
+              '<span class="emi-trust-badge">' + ICON_CLOCK  + 'Instant Approval</span>' +
+            '</div>' +
+
+            // Tenure table
+            '<table class="emi-tenure-table" aria-label="EMI tenure breakdown">' +
+              '<thead><tr>' +
+                '<th>Tenure</th><th>Interest</th><th>Processing</th><th>Per Month</th>' +
+              '</tr></thead>' +
+              '<tbody>' + buildTenureRows() + '</tbody>' +
+            '</table>' +
+
+            // Bank partners
+            '<div>' +
+              '<p class="emi-banks-label">Bank Partners</p>' +
+              '<div class="emi-banks-row">' +
+                '<span class="emi-bank-chip">HDFC</span>' +
+                '<span class="emi-bank-chip">ICICI</span>' +
+                '<span class="emi-bank-chip">SBI</span>' +
+                '<span class="emi-bank-chip">Axis Bank</span>' +
+                '<span class="emi-bank-chip">Kotak</span>' +
+              '</div>' +
+            '</div>' +
+
+            // Eligibility CTA
+            '<a href="#" class="emi-eligibility-btn" id="emi-eligibility-btn" aria-label="Check your EMI eligibility">' +
+              'Check Eligibility' + ICON_ARR +
+            '</a>' +
+
+            // Disclaimer
+            '<p class="emi-disclaimer">EMI availability is subject to bank approval. Offer valid on orders above \u20b95,000. T&amp;C apply.</p>' +
+
+          '</div>' +
+        '</div>'
+      );
+    }
+
+    // ── Build teaser line
+    var teaserWrap = document.createElement('div');
+    teaserWrap.className = 'emi-teaser-wrap';
+    teaserWrap.id = 'emi-teaser';
+    teaserWrap.setAttribute('role', 'button');
+    teaserWrap.setAttribute('aria-expanded', 'false');
+    teaserWrap.setAttribute('aria-controls', 'emi-panel');
+    teaserWrap.setAttribute('tabindex', '0');
+    teaserWrap.innerHTML =
+      '<span class="emi-info-icon" aria-hidden="true">' + ICON_INFO + '</span>' +
+      '<span class="emi-teaser-text">or ' + formatINR(monthly12) + '/month with EMI</span>' +
+      '<span class="emi-chevron" aria-hidden="true">' + ICON_CHEV + '</span>';
+
+    // ── Insert teaser after price element
+    priceEl.insertAdjacentElement('afterend', teaserWrap);
+
+    // ── Insert panel after teaser
+    teaserWrap.insertAdjacentHTML('afterend', buildEMIPanel());
+    var panel = document.getElementById('emi-panel');
+
+    // ── Toggle accordion
+    function toggleEMI() {
+      var isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open', !isOpen);
+      panel.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+      teaserWrap.classList.toggle('open', !isOpen);
+      teaserWrap.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+    }
+
+    teaserWrap.addEventListener('click', toggleEMI);
+    teaserWrap.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleEMI(); }
+    });
+
+    // Eligibility button: placeholder handler
+    var eligBtn = document.getElementById('emi-eligibility-btn');
+    if (eligBtn) {
+      eligBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Placeholder — in production, open bank EMI gateway
+        alert('EMI eligibility check coming soon. For now, please contact our team at +91-79-XXXX-XXXX or via chat.');
+      });
+    }
+
+    // ── Inject EMI payment option into the cart/bag modal (if it exists)
+    injectCartEMI(totalPrice, monthly12);
+
+  })();
+
+  // Injects EMI selector into the cart modal (called after initEMI runs)
+  function injectCartEMI(totalPrice, monthly12) {
+    // Cart modal may render dynamically — observe for it
+    function tryInject() {
+      // The cart/bag modal uses class 'bag-modal' or 'cart-modal'
+      // Attempt to find a summary area; if not found, watch for it
+      var cartModal = document.querySelector('.bag-modal-content, .cart-summary, #bag-modal');
+      if (!cartModal) return false;
+      if (cartModal.querySelector('.emi-checkout-section')) return true; // already injected
+
+      var formatINR = function(n) {
+        var s = Math.ceil(n).toString();
+        if (s.length <= 3) return '\u20b9' + s;
+        var last3 = s.slice(-3);
+        var rest = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',');
+        return '\u20b9' + rest + ',' + last3;
+      };
+
+      var ICON_CHECK = '<svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+      var section = document.createElement('div');
+      section.className = 'emi-checkout-section';
+      section.innerHTML =
+        '<p class="emi-checkout-title">Payment Method</p>' +
+
+        // Option 1: Full payment
+        '<label class="emi-payment-option selected" id="emi-opt-full">' +
+          '<input type="radio" name="emi-payment" value="full" checked> ' +
+          '<div class="emi-payment-option-body">' +
+            '<p class="emi-payment-label">Full Payment</p>' +
+            '<p class="emi-payment-sub">Pay ' + formatINR(totalPrice) + ' now</p>' +
+          '</div>' +
+        '</label>' +
+
+        // Option 2: 12-month EMI
+        '<label class="emi-payment-option" id="emi-opt-emi">' +
+          '<input type="radio" name="emi-payment" value="emi"> ' +
+          '<div class="emi-payment-option-body">' +
+            '<p class="emi-payment-label">' + formatINR(monthly12) + '/month &times; 12</p>' +
+            '<p class="emi-payment-sub">0% interest &middot; HDFC, ICICI, SBI, Axis, Kotak</p>' +
+          '</div>' +
+          '<span class="emi-payment-tag">0% EMI</span>' +
+        '</label>';
+
+      // Wire radio toggle
+      section.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          section.querySelectorAll('.emi-payment-option').forEach(function(opt) {
+            opt.classList.remove('selected');
+          });
+          radio.closest('.emi-payment-option').classList.add('selected');
+        });
+      });
+
+      cartModal.appendChild(section);
+
+      // Add EMI notice below
+      var notice = document.createElement('div');
+      notice.className = 'emi-cart-notice';
+      notice.innerHTML =
+        '<p class="emi-cart-notice-text">Split this into <strong>' + formatINR(monthly12) + '/month</strong> for 12 months with <strong>0% interest</strong> on HDFC, ICICI, SBI, Axis &amp; Kotak credit cards.</p>';
+      cartModal.appendChild(notice);
+
+      return true;
+    }
+
+    // Try immediately, then observe DOM for cart modal
+    if (!tryInject()) {
+      var obs = new MutationObserver(function() {
+        if (tryInject()) obs.disconnect();
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // ============================================================
+  //  WISHLIST MANAGER
+  //  Vanilla JS · localStorage · No external libraries
+  // ============================================================
+  (function initWishlist() {
+
+
+    // ── Product catalog (mirrors the 5 product cards in index.html)
+    const PRODUCTS = [
+      {
+        id: 'product-1',
+        name: 'Threadbare Ring',
+        price: '₹3,999',
+        href: 'product-threadbare-ring.html',
+        img: 'images/_Product%20Cards/prod_ring1.png',
+        category: 'ring'
+      },
+      {
+        id: 'product-2',
+        name: 'Hammered Hoop Earring',
+        price: '₹5,299',
+        href: 'product-hammered-hoop.html',
+        img: 'images/_Product%20Cards/prod_earring1.png',
+        category: 'earring'
+      },
+      {
+        id: 'product-3',
+        name: 'Greco Lariat',
+        price: '₹32,999',
+        href: 'product-greco-lariat.html',
+        img: 'images/_Product%20Cards/prod_necklace1.png',
+        category: 'necklace'
+      },
+      {
+        id: 'product-4',
+        name: 'Sweet Nothing Bracelet',
+        price: '₹11,299',
+        href: 'product-sweet-nothing.html',
+        img: 'images/_Product%20Cards/prod_bracelet1.png',
+        category: 'bracelet'
+      },
+      {
+        id: 'product-5',
+        name: 'Tomboy Ring',
+        price: '₹21,999',
+        href: 'product-tomboy-ring.html',
+        img: 'images/_Product%20Cards/prod_ring2.png',
+        category: 'ring'
+      }
+    ];
+
+    // Map product page filename → product data (for PDP pages)
+    const PDP_MAP = {
+      'product-threadbare-ring.html': PRODUCTS[0],
+      'product-hammered-hoop.html':   PRODUCTS[1],
+      'product-greco-lariat.html':    PRODUCTS[2],
+      'product-sweet-nothing.html':   PRODUCTS[3],
+      'product-tomboy-ring.html':     PRODUCTS[4]
+    };
+
+    const LS_KEY = 'abhushan_wishlist';
+
+    // ── State
+    let wishlist = [];
+    let undoPending = null;
+    let toastTimer = null;
+    let drawerOpen = false;
+
+    // ── Helpers: load / save
+    function load() {
+      try {
+        wishlist = JSON.parse(localStorage.getItem(LS_KEY)) || [];
+      } catch (e) {
+        wishlist = [];
+      }
+    }
+
+    function save() {
+      try {
+        localStorage.setItem(LS_KEY, JSON.stringify(wishlist));
+      } catch (e) {}
+    }
+
+    function isWishlisted(productId) {
+      return wishlist.some(function(p) { return p.id === productId; });
+    }
+
+    function addItem(product) {
+      if (!isWishlisted(product.id)) {
+        wishlist.push(product);
+        save();
+      }
+    }
+
+    function removeItem(productId) {
+      wishlist = wishlist.filter(function(p) { return p.id !== productId; });
+      save();
+    }
+
+    function toggle(product) {
+      if (isWishlisted(product.id)) {
+        removeItem(product.id);
+        showToast('\u2665 Removed from wishlist', null, product);
+        return false;
+      } else {
+        addItem(product);
+        showToast('\u2665 Saved to wishlist', 'Undo', product);
+        return true;
+      }
+    }
+
+    // ── SVG snippets
+    const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    const CLOSE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
+    // ── Header badge
+    let navWishlistBtn = null;
+    let badgeEl = null;
+
+    function injectHeaderIcon() {
+      // Try finding nav-top-right
+      const navRight = document.querySelector('.nav-top-right');
+      if (!navRight) return;
+
+      navWishlistBtn = document.createElement('button');
+      navWishlistBtn.className = 'nav-wishlist-btn';
+      navWishlistBtn.id = 'nav-wishlist-btn';
+      navWishlistBtn.setAttribute('aria-label', 'Open wishlist');
+      navWishlistBtn.setAttribute('type', 'button');
+      navWishlistBtn.innerHTML = HEART_SVG;
+
+      badgeEl = document.createElement('span');
+      badgeEl.className = 'wishlist-badge';
+      badgeEl.id = 'wishlist-badge';
+      badgeEl.setAttribute('aria-live', 'polite');
+      navWishlistBtn.appendChild(badgeEl);
+
+      navRight.prepend(navWishlistBtn);
+
+      navWishlistBtn.addEventListener('click', function() {
+        openDrawer();
+      });
+    }
+
+    function updateBadge() {
+      if (!badgeEl) return;
+      var count = wishlist.length;
+      badgeEl.textContent = count;
+      if (count > 0) {
+        badgeEl.classList.add('visible');
+        navWishlistBtn && navWishlistBtn.classList.add('has-items');
+      } else {
+        badgeEl.classList.remove('visible');
+        navWishlistBtn && navWishlistBtn.classList.remove('has-items');
+      }
+    }
+
+    // ── Inject heart buttons on product cards (index.html)
+    function injectCardHearts() {
+      PRODUCTS.forEach(function(product) {
+        var card = document.getElementById(product.id);
+        if (!card) return;
+        var imageWrap = card.querySelector('.product-image-wrap');
+        if (!imageWrap) return;
+
+        var btn = document.createElement('button');
+        btn.className = 'wishlist-heart';
+        btn.setAttribute('aria-label', 'Add ' + product.name + ' to wishlist');
+        btn.setAttribute('type', 'button');
+        btn.setAttribute('data-product-id', product.id);
+        btn.innerHTML = HEART_SVG;
+
+        if (isWishlisted(product.id)) btn.classList.add('active');
+
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var added = toggle(product);
+          btn.classList.toggle('active', added);
+          // Trigger pop animation
+          btn.classList.remove('pop');
+          void btn.offsetWidth; // reflow
+          btn.classList.add('pop');
+          btn.addEventListener('animationend', function onEnd() {
+            btn.classList.remove('pop');
+            btn.removeEventListener('animationend', onEnd);
+          });
+          updateBadge();
+          refreshDrawer();
+        });
+
+        imageWrap.appendChild(btn);
+      });
+    }
+
+    // ── Inject wishlist heart on PDP pages
+    function injectPDPHeart() {
+      var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+      var product = PDP_MAP[pagePath];
+      if (!product) return;
+
+      var actionsRow = document.querySelector('.product-actions-row-tiffany');
+      if (!actionsRow) return;
+
+      var btn = document.createElement('button');
+      btn.className = 'btn-pdp-wishlist-tiffany';
+      btn.id = 'pdp-wishlist-btn';
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('aria-label', 'Save to wishlist');
+      btn.innerHTML = HEART_SVG;
+
+      if (isWishlisted(product.id)) btn.classList.add('active');
+
+      btn.addEventListener('click', function() {
+        var added = toggle(product);
+        btn.classList.toggle('active', added);
+        btn.classList.remove('pop');
+        void btn.offsetWidth;
+        btn.classList.add('pop');
+        btn.addEventListener('animationend', function onEnd() {
+          btn.classList.remove('pop');
+          btn.removeEventListener('animationend', onEnd);
+        });
+        updateBadge();
+        refreshDrawer();
+      });
+
+      actionsRow.appendChild(btn);
+    }
+
+    // ── Drawer
+    var drawerOverlay = null;
+    var drawerEl = null;
+
+    function buildDrawerShell() {
+      drawerOverlay = document.createElement('div');
+      drawerOverlay.className = 'wl-overlay';
+      drawerOverlay.id = 'wl-overlay';
+      drawerOverlay.addEventListener('click', closeDrawer);
+
+      drawerEl = document.createElement('div');
+      drawerEl.className = 'wl-drawer';
+      drawerEl.id = 'wl-drawer';
+      drawerEl.setAttribute('role', 'dialog');
+      drawerEl.setAttribute('aria-modal', 'true');
+      drawerEl.setAttribute('aria-label', 'Your Wishlist');
+
+      document.body.appendChild(drawerOverlay);
+      document.body.appendChild(drawerEl);
+    }
+
+    function renderDrawerContent() {
+      if (!drawerEl) return;
+
+      var isEmpty = wishlist.length === 0;
+
+      var footerHtml = !isEmpty ? (
+        '<div class="wl-drawer-footer">' +
+          '<p class="wl-count-line">' + wishlist.length + ' item' + (wishlist.length !== 1 ? 's' : '') + ' saved</p>' +
+          '<button type="button" class="wl-move-all-btn" id="wl-move-all">Move All to Bag</button>' +
+          '<a href="index.html#section-products" class="wl-continue-link">Continue Shopping</a>' +
+        '</div>'
+      ) : '';
+
+      var listHtml;
+      if (isEmpty) {
+        listHtml = (
+          '<div class="wl-empty-state">' +
+            '<div class="wl-empty-icon">' + HEART_SVG.replace('viewBox', 'width="56" height="56" viewBox') + '</div>' +
+            '<p class="wl-empty-title">Your wishlist is empty.</p>' +
+            '<p class="wl-empty-sub">Explore our collections and save the pieces that speak to you.</p>' +
+            '<a href="index.html#section-products" class="wl-empty-cta">Explore Collections</a>' +
+          '</div>'
+        );
+      } else {
+        listHtml = (
+          '<div class="wl-drawer-list" id="wl-drawer-list">' +
+          wishlist.map(function(p, idx) {
+            return (
+              '<div class="wl-item" style="animation-delay:' + (idx * 0.05) + 's">' +
+                '<a class="wl-item-thumb" href="' + p.href + '">' +
+                  '<img src="' + p.img + '" alt="' + p.name + '" loading="lazy">' +
+                '</a>' +
+                '<div class="wl-item-info">' +
+                  '<p class="wl-item-name">' + p.name + '</p>' +
+                  '<p class="wl-item-price">' + p.price + '</p>' +
+                '</div>' +
+                '<button type="button" class="wl-item-remove" data-pid="' + p.id + '" aria-label="Remove ' + p.name + ' from wishlist">' +
+                  X_SVG +
+                '</button>' +
+              '</div>'
+            );
+          }).join('') +
+          '</div>'
+        );
+      }
+
+      drawerEl.innerHTML = (
+        '<div class="wl-drawer-header">' +
+          '<h2 class="wl-drawer-title">Your Wishlist</h2>' +
+          '<button type="button" class="wl-drawer-close" id="wl-close-btn" aria-label="Close wishlist">' +
+            CLOSE_SVG +
+          '</button>' +
+        '</div>' +
+        listHtml +
+        footerHtml
+      );
+
+      // Wire close button
+      var closeBtn = drawerEl.querySelector('#wl-close-btn');
+      if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+      // Wire remove buttons
+      drawerEl.querySelectorAll('.wl-item-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var pid = btn.getAttribute('data-pid');
+          var removed = wishlist.find(function(p) { return p.id === pid; });
+          removeItem(pid);
+          updateBadge();
+          refreshDrawer(); // re-render list
+          updateCardHearts();
+          updatePDPHeart();
+          if (removed) {
+            showToast('\u2665 Removed from wishlist', 'Undo', removed);
+          }
+        });
+      });
+
+      // Wire move all button
+      var moveAllBtn = drawerEl.querySelector('#wl-move-all');
+      if (moveAllBtn) {
+        moveAllBtn.addEventListener('click', function() {
+          showToast('\u2713 All items added to bag!', null, null);
+          // Clear wishlist after moving
+          wishlist = [];
+          save();
+          updateBadge();
+          refreshDrawer();
+          updateCardHearts();
+          updatePDPHeart();
+        });
+      }
+    }
+
+    function refreshDrawer() {
+      if (!drawerEl) return;
+      renderDrawerContent();
+    }
+
+    function openDrawer() {
+      if (!drawerEl) buildDrawerShell();
+      renderDrawerContent();
+      drawerOverlay.classList.add('open');
+      drawerEl.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      drawerOpen = true;
+      // Focus management
+      var closeBtn = drawerEl.querySelector('#wl-close-btn');
+      if (closeBtn) setTimeout(function() { closeBtn.focus(); }, 50);
+    }
+
+    function closeDrawer() {
+      if (!drawerEl) return;
+      drawerOverlay.classList.remove('open');
+      drawerEl.classList.remove('open');
+      document.body.style.overflow = '';
+      drawerOpen = false;
+    }
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && drawerOpen) closeDrawer();
+    });
+
+    // ── Sync all card hearts with current wishlist state
+    function updateCardHearts() {
+      document.querySelectorAll('.wishlist-heart[data-product-id]').forEach(function(btn) {
+        var pid = btn.getAttribute('data-product-id');
+        btn.classList.toggle('active', isWishlisted(pid));
+      });
+    }
+
+    // ── Sync PDP heart with current state
+    function updatePDPHeart() {
+      var pdpBtn = document.getElementById('pdp-wishlist-btn');
+      if (!pdpBtn) return;
+      var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+      var product = PDP_MAP[pagePath];
+      if (!product) return;
+      pdpBtn.classList.toggle('active', isWishlisted(product.id));
+    }
+
+    // ── Toast
+    var toastEl = null;
+
+    function buildToast() {
+      toastEl = document.createElement('div');
+      toastEl.className = 'wl-toast';
+      toastEl.id = 'wl-toast';
+      toastEl.setAttribute('role', 'status');
+      toastEl.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toastEl);
+    }
+
+    function showToast(message, undoLabel, product) {
+      if (!toastEl) buildToast();
+
+      // Clear any running hide timer
+      if (toastTimer) { clearTimeout(toastTimer); }
+
+      undoPending = product;
+
+      var undoBtn = undoLabel
+        ? '<button type="button" class="wl-toast-undo" id="wl-toast-undo">' + undoLabel + '</button>'
+        : '';
+
+      toastEl.innerHTML = '<span class="wl-toast-msg">' + message + '</span>' + undoBtn;
+      toastEl.classList.add('visible');
+
+      if (undoLabel) {
+        var undoBtnEl = toastEl.querySelector('#wl-toast-undo');
+        if (undoBtnEl) {
+          undoBtnEl.addEventListener('click', function() {
+            if (undoPending) {
+              // Undo: re-add removed item or re-remove added item
+              if (isWishlisted(undoPending.id)) {
+                removeItem(undoPending.id);
+              } else {
+                addItem(undoPending);
+              }
+              undoPending = null;
+              updateBadge();
+              refreshDrawer();
+              updateCardHearts();
+              updatePDPHeart();
+              hideToast();
+            }
+          });
+        }
+      }
+
+      toastTimer = setTimeout(hideToast, 3500);
+    }
+
+    function hideToast() {
+      if (!toastEl) return;
+      toastEl.classList.remove('visible');
+    }
+
+    // ── Boot
+    load();
+    injectHeaderIcon();
+    injectCardHearts();
+    injectPDPHeart();
+    updateBadge();
+
+  })();
 
   console.log('%c✦ ABHUSHAN · Ahmedabad, Gujarat, India ✦', 'color:#C08B5D;font-family:Georgia,serif;font-size:14px;');
 
