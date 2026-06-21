@@ -877,31 +877,34 @@
   ];
 
   function injectSearchWidget() {
-    if (document.getElementById('search-overlay')) return;
-
-    // 1. Inject trigger icon in nav-top-right
-    const navTopRight = document.querySelector('.nav-top-right');
-    if (navTopRight) {
-      const searchTrigger = document.createElement('button');
-      searchTrigger.id = 'search-trigger-btn-header';
-      searchTrigger.className = 'nav-action-btn-tiffany';
-      searchTrigger.setAttribute('aria-label', 'Search Catalog');
-      searchTrigger.innerHTML = `
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      `;
-      navTopRight.appendChild(searchTrigger);
+    // 1. Locate or create trigger icon in nav-top-right
+    let triggerBtn = document.getElementById('search-trigger-btn-header');
+    if (!triggerBtn) {
+      const navTopRight = document.querySelector('.nav-top-right');
+      if (navTopRight) {
+        triggerBtn = document.createElement('button');
+        triggerBtn.id = 'search-trigger-btn-header';
+        triggerBtn.className = 'nav-action-btn-tiffany';
+        triggerBtn.setAttribute('aria-label', 'Search Catalog');
+        triggerBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        `;
+        navTopRight.appendChild(triggerBtn);
+      }
     }
 
-    // 2. Inject overlay markup in document.body
-    const overlay = document.createElement('div');
-    overlay.id = 'search-overlay';
-    overlay.className = 'search-overlay-tiffany';
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('role', 'dialog');
-    overlay.innerHTML = `
+    // 2. Locate or create overlay markup in document.body
+    let overlay = document.getElementById('search-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'search-overlay';
+      overlay.className = 'search-overlay-tiffany';
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('role', 'dialog');
+      overlay.innerHTML = `
       <div class="search-overlay-inner-tiffany">
         <div class="search-overlay-header-tiffany">
           <div class="search-input-wrap-tiffany">
@@ -934,7 +937,8 @@
         </div>
       </div>
     `;
-    document.body.appendChild(overlay);
+      document.body.appendChild(overlay);
+    }
 
     // 3. Bind event listeners
     const triggerBtn = document.getElementById('search-trigger-btn-header');

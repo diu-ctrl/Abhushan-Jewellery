@@ -290,7 +290,13 @@
       </div>
 
       <!-- Right: Actions -->
-      <div class="nav-top-right">
+            <div class="nav-top-right">
+        <button class="nav-action-btn-tiffany" id="search-trigger-btn-header" aria-label="Search Catalog">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -1042,6 +1048,41 @@
         <p class="admin-login-error" id="admin-login-error"></p>
         <button type="submit" class="admin-modal-submit-btn">Unlock Portal</button>
       </form>
+    </div>
+  </div>
+
+    <!-- Search Overlay -->
+  <div id="search-overlay" class="search-overlay-tiffany" aria-modal="true" role="dialog">
+    <div class="search-overlay-inner-tiffany">
+      <div class="search-overlay-header-tiffany">
+        <div class="search-input-wrap-tiffany">
+          <svg class="search-input-icon-tiffany" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="search" id="search-input-field" class="search-input-field-tiffany" placeholder="Search for rings, necklaces, collections..." autocomplete="off" />
+        </div>
+        <button class="search-overlay-close-btn" id="search-overlay-close-btn" aria-label="Close search">&times;</button>
+      </div>
+      <div class="search-overlay-body-tiffany">
+        <!-- Popular Searches Section -->
+        <div class="popular-searches-section-tiffany" id="popular-searches">
+          <h4 class="search-section-title-tiffany">Popular Searches</h4>
+          <div class="popular-tags-tiffany">
+            <button type="button" class="popular-tag-pill-tiffany" data-query="Emerald Rings">Emerald Rings</button>
+            <button type="button" class="popular-tag-pill-tiffany" data-query="Welded Forever">Welded Forever</button>
+            <button type="button" class="popular-tag-pill-tiffany" data-query="Bridal Sets">Bridal Sets</button>
+            <button type="button" class="popular-tag-pill-tiffany" data-query="Gold Chains">Gold Chains</button>
+            <button type="button" class="popular-tag-pill-tiffany" data-query="Custom Lockets">Custom Lockets</button>
+          </div>
+        </div>
+        <!-- Search Results Dropdown -->
+        <div class="search-results-section-tiffany" id="search-results" style="display: none;">
+          <h4 class="search-section-title-tiffany">Search Results</h4>
+          <div class="search-results-list-tiffany" id="search-results-list">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
