@@ -5143,3 +5143,427 @@ button:active, .btn-booking-submit:active, .btn-directions-tiffany:active, .btn-
     transform: translate(0, -20px) !important;
   }
 }
+
+/* ============================================================
+   VIRTUAL TRY-ON (VTO) FEATURE STYLES
+   ============================================================ */
+
+.product-actions-row-tiffany {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  margin-bottom: var(--space-xs);
+  width: 100%;
+}
+
+.product-actions-row-tiffany .btn-add-to-bag-tiffany {
+  margin-top: 0;
+  flex: 2;
+}
+
+.btn-vto-trigger-tiffany {
+  flex: 1;
+  padding: 16px;
+  background-color: transparent;
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--dur) var(--ease);
+}
+
+.btn-vto-trigger-tiffany:hover {
+  background-color: var(--color-gold);
+  color: var(--color-white);
+}
+
+.btn-vto-trigger-tiffany:active {
+  transform: scale(0.98);
+}
+
+/* VTO Modal Styles */
+.vto-modal-overlay-tiffany {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(50, 35, 37, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.vto-modal-overlay-tiffany.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.vto-modal-card-tiffany {
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 20px 50px rgba(50, 35, 37, 0.15);
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+  max-width: 550px;
+  height: 90vh;
+  max-height: 780px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: transform 0.4s var(--ease), opacity 0.4s var(--ease);
+  overflow: hidden;
+}
+
+.vto-modal-overlay-tiffany.active .vto-modal-card-tiffany {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.vto-header-tiffany {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-white);
+}
+
+.vto-title-tiffany {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.vto-close-btn-tiffany {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-text-light);
+  transition: color var(--dur) var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+}
+
+.vto-close-btn-tiffany:hover {
+  color: var(--color-gold);
+}
+
+.vto-body-tiffany {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 20px;
+  gap: 16px;
+  background-color: var(--color-bg);
+  align-items: center;
+}
+
+.vto-instructions-tiffany {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-light);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 400px;
+}
+
+/* Feed Viewport */
+.vto-feed-viewport-tiffany {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 3/4;
+  background-color: #1a1516;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.vto-video-feed-tiffany {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* Front camera mirrored */
+}
+
+.vto-video-feed-tiffany.unmirrored {
+  transform: none;
+}
+
+.vto-fallback-image-tiffany {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+/* Guides and Overlays */
+.vto-silhouette-guide-tiffany {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0.25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.vto-silhouette-guide-tiffany svg {
+  width: 75%;
+  height: 75%;
+  stroke: var(--color-gold);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.vto-silhouette-guide-tiffany.mirrored svg {
+  transform: scaleX(-1);
+}
+
+.vto-jewelry-overlay-tiffany {
+  position: absolute;
+  z-index: 10;
+  width: 100px;
+  height: 100px;
+  left: calc(50% - 50px);
+  top: calc(50% - 50px);
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+}
+
+.vto-jewelry-overlay-tiffany img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Form Fallback UI */
+.vto-upload-fallback-tiffany {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px var(--space-md);
+  border: 1px dashed var(--color-gold);
+  background-color: var(--color-white);
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  gap: 12px;
+}
+
+.vto-upload-fallback-tiffany p {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.btn-vto-upload-tiffany {
+  padding: 10px 16px;
+  background-color: var(--color-white);
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+
+.btn-vto-upload-tiffany:hover {
+  background-color: var(--color-gold);
+  color: var(--color-white);
+}
+
+.vto-file-input-hidden {
+  display: none;
+}
+
+/* Modal Controls */
+.vto-controls-tiffany {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-white);
+}
+
+.vto-sliders-tiffany {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vto-slider-group-tiffany {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vto-slider-label-tiffany {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-light);
+  width: 60px;
+  letter-spacing: 0.5px;
+}
+
+.vto-slider-input-tiffany {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 4px;
+  background: var(--color-border);
+  outline: none;
+  border-radius: 2px;
+}
+
+.vto-slider-input-tiffany::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  cursor: pointer;
+  transition: background-color var(--dur);
+}
+
+.vto-slider-input-tiffany::-webkit-slider-thumb:hover {
+  background: #b09159;
+}
+
+.vto-actions-row-tiffany {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-vto-action-tiffany {
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all var(--dur) var(--ease);
+}
+
+.btn-vto-action-tiffany:hover {
+  border-color: var(--color-gold);
+  color: var(--color-gold);
+}
+
+.btn-vto-action-tiffany:active {
+  transform: scale(0.96);
+}
+
+.btn-vto-action-primary-tiffany {
+  background-color: var(--color-gold);
+  color: var(--color-bg-dark);
+  border-color: var(--color-gold);
+}
+
+.btn-vto-action-primary-tiffany:hover {
+  background-color: #b09159;
+  border-color: #b09159;
+  color: var(--color-white);
+}
+
+/* Preview Snapshots */
+.vto-preview-container-tiffany {
+  display: none;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 3/4;
+  border: 1px solid var(--color-border);
+  position: relative;
+  background-color: var(--color-bg);
+}
+
+.vto-preview-image-tiffany {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive Mobile Layout overrides */
+@media (max-width: 768px) {
+  .vto-modal-card-tiffany {
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    max-width: 100vw;
+    border: none;
+  }
+  
+  .vto-body-tiffany {
+    padding: 12px;
+  }
+  
+  .vto-feed-viewport-tiffany,
+  .vto-preview-container-tiffany,
+  .vto-upload-fallback-tiffany {
+    max-width: 100%;
+    flex: 1;
+  }
+  
+  .vto-controls-tiffany {
+    padding: 12px 16px;
+  }
+}
+
+/* Accessibility reduced motion exception */
+@media (prefers-reduced-motion: reduce) {
+  .vto-modal-card-tiffany {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .btn-vto-trigger-tiffany,
+  .vto-modal-overlay-tiffany,
+  .btn-vto-action-tiffany,
+  .vto-close-btn-tiffany {
+    transition: none !important;
+  }
+}
+

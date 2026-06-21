@@ -994,13 +994,12 @@
       });
     }
   }
-
   function initApp() {
     injectChatWidget();
     injectSearchWidget();
     initMicroInteractions();
+    initVirtualTryOn();
   }
-
   if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initApp);
@@ -1165,7 +1164,575 @@
     }
   }
 
+  // Virtual Try-On (VTO) Feature Logic
+  function initVirtualTryOn() {
+    const triggerBtn = document.getElementById('vto-trigger-btn');
+    if (!triggerBtn) return; // Exit if not on a product detail page
+
+    const titleEl = document.querySelector('.product-title-detail-tiffany');
+    const productName = titleEl ? titleEl.textContent.trim() : 'Jewelry Piece';
+
+    // Map product names to categories and transparent card assets
+    const productMap = {
+      'threadbare ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' },
+      'tomboy ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring2.png' },
+      'hammered hoop earring': { category: 'earring', overlay: 'images/_Product Cards/prod_earring1.png' },
+      'greco lariat': { category: 'necklace', overlay: 'images/_Product Cards/prod_necklace1.png' },
+      'sweet nothing bracelet': { category: 'bracelet', overlay: 'images/_Product Cards/prod_bracelet1.png' }
+    };
+
+    const normName = productName.toLowerCase();
+    const config = productMap[normName] || { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' };
+
+    // Alignment Guide SVG Silhouettes
+    const handSvg = `
+      <svg viewBox="0 0 100 133" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M50 125 C45 105, 40 85, 38 75 C34 58, 28 45, 28 35 C28 22, 33 18, 35 10 C36 7, 38 4, 40 4 C42 4, 44 8, 44 14 C44 8, 46 4, 48 4 C50 4, 52 8, 52 16 C52 10, 54 6, 56 6 C58 6, 60 10, 60 18 C60 12, 62 10, 64 10 C66 10, 68 14, 68 22 C68 35, 66 48, 69 62 C71 72, 74 82, 74 95" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
+
+    const earSvg = `
+      <svg viewBox="0 0 100 133" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M30 40 C30 25, 45 15, 60 15 C75 15, 80 30, 80 45 C80 65, 65 75, 60 85 C55 95, 40 100, 30 95 C25 92, 22 85, 25 78 C28 72, 35 70, 35 60 C35 48, 22 45, 30 40 Z" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M48 45 C50 40, 58 40, 60 48 C62 55, 55 62, 52 65" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    `;
+
+    const neckSvg = `
+      <svg viewBox="0 0 100 133" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M30 15 C30 40, 35 60, 38 75 C42 90, 45 92, 50 92 C55 92, 58 90, 62 75 C65 60, 70 40, 70 15" stroke-linecap="round" />
+        <path d="M10 125 C20 110, 32 102, 42 102 C45 102, 50 105, 55 102 C65 102, 77 110, 90 125" stroke-linecap="round" />
+      </svg>
+    `;
+
+    let activeGuide = handSvg;
+    if (config.category === 'earring') {
+      activeGuide = earSvg;
+    } else if (config.category === 'necklace') {
+      activeGuide = neckSvg;
+    }
+
+    let activeStream = null;
+    let activeFacingMode = 'user'; // 'user' = front, 'environment' = back
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
+    let jewelryScale = 1.0;
+    let jewelryRotation = 0;
+    let isHandMirrored = false;
+
+    // Create Modal Elements DOM structure
+    let modalOverlay = document.getElementById('vto-modal-overlay');
+    if (!modalOverlay) {
+      modalOverlay = document.createElement('div');
+      modalOverlay.className = 'vto-modal-overlay-tiffany';
+      modalOverlay.id = 'vto-modal-overlay';
+      modalOverlay.innerHTML = `
+        <div class="vto-modal-card-tiffany">
+          <div class="vto-header-tiffany">
+            <h2 class="vto-title-tiffany">See How It Looks On You</h2>
+            <button type="button" class="vto-close-btn-tiffany" id="vto-close-btn" aria-label="Close modal">&times;</button>
+          </div>
+          <div class="vto-body-tiffany">
+            <p class="vto-instructions-tiffany">Allow camera access, then position your ${config.category === 'ring' || config.category === 'bracelet' ? 'hand' : config.category === 'earring' ? 'ear' : 'neck'} in the frame.</p>
+            
+            <!-- Viewport Container -->
+            <div class="vto-feed-viewport-tiffany" id="vto-viewport">
+              <video class="vto-video-feed-tiffany" id="vto-video" autoplay playsinline></video>
+              <img class="vto-fallback-image-tiffany" id="vto-fallback-img" alt="Uploaded try on photo" />
+              
+              <!-- Silhouette Overlay -->
+              <div class="vto-silhouette-guide-tiffany" id="vto-silhouette">
+                ${activeGuide}
+              </div>
+              
+              <!-- Jewelry Overlay -->
+              <div class="vto-jewelry-overlay-tiffany" id="vto-jewelry-overlay">
+                <img id="vto-jewelry-img" src="${config.overlay}" alt="${productName}" />
+              </div>
+            </div>
+
+            <!-- Fallback Upload UI -->
+            <div class="vto-upload-fallback-tiffany" id="vto-upload-fallback">
+              <p>Camera feed is unavailable or access was denied.</p>
+              <button type="button" class="btn-vto-upload-tiffany" id="vto-upload-btn">Upload a Photo</button>
+              <input type="file" class="vto-file-input-hidden" id="vto-file-input" accept="image/*" />
+            </div>
+
+            <!-- Captured Preview Snapshot Container -->
+            <div class="vto-preview-container-tiffany" id="vto-preview-container">
+              <img class="vto-preview-image-tiffany" id="vto-preview-img" alt="Captured try on snapshot" />
+            </div>
+          </div>
+
+          <!-- Controls Section -->
+          <div class="vto-controls-tiffany">
+            <div class="vto-sliders-tiffany" id="vto-sliders-wrap">
+              <div class="vto-slider-group-tiffany">
+                <span class="vto-slider-label-tiffany">Scale</span>
+                <input type="range" class="vto-slider-input-tiffany" id="vto-scale-slider" min="0.2" max="2.0" step="0.05" value="1.0" />
+              </div>
+              <div class="vto-slider-group-tiffany">
+                <span class="vto-slider-label-tiffany">Rotate</span>
+                <input type="range" class="vto-slider-input-tiffany" id="vto-rotate-slider" min="-180" max="180" step="1" value="0" />
+              </div>
+            </div>
+
+            <!-- Action buttons row -->
+            <div class="vto-actions-row-tiffany">
+              <!-- Live State Actions -->
+              <button type="button" class="btn-vto-action-tiffany" id="btn-vto-upload-alt" title="Upload Photo">
+                Upload
+              </button>
+              ${config.category === 'ring' || config.category === 'bracelet' ? `
+              <button type="button" class="btn-vto-action-tiffany" id="btn-vto-hand" title="Mirror hand alignment">
+                Switch Hand
+              </button>
+              ` : ''}
+              <button type="button" class="btn-vto-action-tiffany" id="btn-vto-camera" title="Switch between front and back camera">
+                Switch Cam
+              </button>
+              <button type="button" class="btn-vto-action-tiffany btn-vto-action-primary-tiffany" id="btn-vto-capture">
+                Capture
+              </button>
+
+              <!-- Captured Preview Actions -->
+              <button type="button" class="btn-vto-action-tiffany" id="btn-vto-retake" style="display: none;">
+                Retake
+              </button>
+              <button type="button" class="btn-vto-action-tiffany btn-vto-action-primary-tiffany" id="btn-vto-share" style="display: none;">
+                Share Photo
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalOverlay);
+    }
+
+    // Cache elements
+    const modal = document.getElementById('vto-modal-overlay');
+    const closeBtn = document.getElementById('vto-close-btn');
+    const viewport = document.getElementById('vto-viewport');
+    const videoFeed = document.getElementById('vto-video');
+    const fallbackImg = document.getElementById('vto-fallback-img');
+    const uploadFallback = document.getElementById('vto-upload-fallback');
+    const fileInput = document.getElementById('vto-file-input');
+    const uploadBtn = document.getElementById('vto-upload-btn');
+    const uploadAltBtn = document.getElementById('btn-vto-upload-alt');
+    const jewelryOverlay = document.getElementById('vto-jewelry-overlay');
+    const jewelryImg = document.getElementById('vto-jewelry-img');
+    const scaleSlider = document.getElementById('vto-scale-slider');
+    const rotateSlider = document.getElementById('vto-rotate-slider');
+    const silhouette = document.getElementById('vto-silhouette');
+    const slidersWrap = document.getElementById('vto-sliders-wrap');
+
+    // Controls
+    const handBtn = document.getElementById('btn-vto-hand');
+    const cameraBtn = document.getElementById('btn-vto-camera');
+    const captureBtn = document.getElementById('btn-vto-capture');
+    const retakeBtn = document.getElementById('btn-vto-retake');
+    const shareBtn = document.getElementById('btn-vto-share');
+    const previewContainer = document.getElementById('vto-preview-container');
+    const previewImg = document.getElementById('vto-preview-img');
+
+    // Reset overlay position and transformation states
+    function resetOverlayState() {
+      currentX = 0;
+      currentY = 0;
+      jewelryScale = 1.0;
+      jewelryRotation = 0;
+      isHandMirrored = false;
+      
+      if (scaleSlider) scaleSlider.value = 1.0;
+      if (rotateSlider) rotateSlider.value = 0;
+      if (silhouette) silhouette.classList.remove('mirrored');
+      if (jewelryOverlay) {
+        jewelryOverlay.classList.remove('vto-hand-toggle-mirrored');
+        applyOverlayTransform();
+      }
+    }
+
+    function applyOverlayTransform() {
+      if (!jewelryOverlay) return;
+      jewelryOverlay.style.transform = `translate(${currentX}px, ${currentY}px) scale(${jewelryScale}) rotate(${jewelryRotation}deg)`;
+    }
+
+    // Camera Start / Stop Streaming
+    function startCamera() {
+      stopCamera();
+      
+      const constraints = {
+        video: {
+          facingMode: activeFacingMode,
+          width: { ideal: 640 },
+          height: { ideal: 853 }
+        },
+        audio: false
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .then(stream => {
+          activeStream = stream;
+          videoFeed.srcObject = stream;
+          videoFeed.style.display = 'block';
+          uploadFallback.style.display = 'none';
+          fallbackImg.style.display = 'none';
+          
+          if (activeFacingMode === 'user') {
+            videoFeed.classList.remove('unmirrored');
+          } else {
+            videoFeed.classList.add('unmirrored');
+          }
+        })
+        .catch(err => {
+          console.warn('Camera Access denied or unavailable. Loading fallback upload:', err);
+          showUploadFallback();
+        });
+    }
+
+    function stopCamera() {
+      if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+      }
+    }
+
+    function showUploadFallback() {
+      stopCamera();
+      videoFeed.style.display = 'none';
+      uploadFallback.style.display = 'flex';
+      
+      // Hide Camera Toggle Button
+      if (cameraBtn) cameraBtn.style.display = 'none';
+    }
+
+    // Open Modal
+    triggerBtn.addEventListener('click', () => {
+      resetOverlayState();
+      modal.classList.add('active');
+      activeFacingMode = 'user';
+      startCamera();
+      
+      // Trigger dynamic resizing adjustments
+      setTimeout(centerJewelryOverlay, 100);
+    });
+
+    // Close Modal
+    function closeModal() {
+      stopCamera();
+      modal.classList.remove('active');
+      
+      // Reset view states
+      previewContainer.style.display = 'none';
+      viewport.style.display = 'block';
+      captureBtn.style.display = 'inline-flex';
+      retakeBtn.style.display = 'none';
+      shareBtn.style.display = 'none';
+      
+      if (cameraBtn && videoFeed.style.display !== 'none') cameraBtn.style.display = 'inline-flex';
+      if (handBtn) handBtn.style.display = 'inline-flex';
+      if (uploadAltBtn) uploadAltBtn.style.display = 'inline-flex';
+      if (slidersWrap) slidersWrap.style.display = 'flex';
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+
+    // Center the jewelry overlay element in viewport bounds
+    function centerJewelryOverlay() {
+      if (!viewport || !jewelryOverlay) return;
+      const vRect = viewport.getBoundingClientRect();
+      const jRect = jewelryOverlay.getBoundingClientRect();
+      
+      // Set to center offset
+      currentX = 0;
+      currentY = 0;
+      applyOverlayTransform();
+    }
+
+    // Sliders Listener
+    if (scaleSlider) {
+      scaleSlider.addEventListener('input', (e) => {
+        jewelryScale = parseFloat(e.target.value);
+        applyOverlayTransform();
+      });
+    }
+
+    if (rotateSlider) {
+      rotateSlider.addEventListener('input', (e) => {
+        jewelryRotation = parseInt(e.target.value);
+        applyOverlayTransform();
+      });
+    }
+
+    // Switch Hand Alignment Guide
+    if (handBtn) {
+      handBtn.addEventListener('click', () => {
+        isHandMirrored = !isHandMirrored;
+        if (isHandMirrored) {
+          silhouette.classList.add('mirrored');
+          jewelryOverlay.classList.add('vto-hand-toggle-mirrored');
+        } else {
+          silhouette.classList.remove('mirrored');
+          jewelryOverlay.classList.remove('vto-hand-toggle-mirrored');
+        }
+      });
+    }
+
+    // Switch Camera Stream
+    if (cameraBtn) {
+      cameraBtn.addEventListener('click', () => {
+        activeFacingMode = (activeFacingMode === 'user' ? 'environment' : 'user');
+        startCamera();
+      });
+    }
+
+    // File Upload Fallback Logic
+    function handlePhotoUpload(file) {
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        fallbackImg.src = e.target.result;
+        fallbackImg.style.display = 'block';
+        videoFeed.style.display = 'none';
+        uploadFallback.style.display = 'none';
+        
+        // Center overlay on uploaded photo loading
+        resetOverlayState();
+        setTimeout(centerJewelryOverlay, 100);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    if (uploadBtn) {
+      uploadBtn.addEventListener('click', () => fileInput.click());
+    }
+    if (uploadAltBtn) {
+      uploadAltBtn.addEventListener('click', () => fileInput.click());
+    }
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handlePhotoUpload(e.target.files[0]);
+        }
+      });
+    }
+
+    // Draggable Overlay: Touch and Mouse events
+    function onStart(e) {
+      isDragging = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      startX = clientX - currentX;
+      startY = clientY - currentY;
+      
+      e.preventDefault();
+    }
+
+    function onMove(e) {
+      if (!isDragging) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      
+      currentX = clientX - startX;
+      currentY = clientY - startY;
+      
+      applyOverlayTransform();
+      e.preventDefault();
+    }
+
+    function onEnd() {
+      isDragging = false;
+    }
+
+    if (jewelryOverlay) {
+      jewelryOverlay.addEventListener('mousedown', onStart);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onEnd);
+      
+      jewelryOverlay.addEventListener('touchstart', onStart, { passive: false });
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onEnd);
+    }
+
+    // Canvas Snapshot Capture
+    captureBtn.addEventListener('click', () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Determine dimensions based on live video feed vs fallback image upload
+      const isLiveStream = (videoFeed.style.display !== 'none' && videoFeed.readyState >= 2);
+      const bgWidth = isLiveStream ? videoFeed.videoWidth : fallbackImg.naturalWidth;
+      const bgHeight = isLiveStream ? videoFeed.videoHeight : fallbackImg.naturalHeight;
+
+      if (!bgWidth || !bgHeight) {
+        alert("Camera stream or uploaded image is not ready yet. Please try again.");
+        return;
+      }
+
+      canvas.width = bgWidth;
+      canvas.height = bgHeight;
+
+      // 1. Draw Background
+      if (isLiveStream) {
+        // Handle horizontal mirroring if camera is facing front
+        if (activeFacingMode === 'user') {
+          ctx.translate(canvas.width, 0);
+          ctx.scale(-1, 1);
+        }
+        ctx.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+        // Reset transformation state
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+      } else {
+        ctx.drawImage(fallbackImg, 0, 0, canvas.width, canvas.height);
+      }
+
+      // 2. Draw Jewelry overlay with correct position mapping
+      const vRect = viewport.getBoundingClientRect();
+      const jRect = jewelryOverlay.getBoundingClientRect();
+
+      // Relative coordinates of overlay inside viewport wrapper
+      const relX = (jRect.left - vRect.left) / vRect.width;
+      const relY = (jRect.top - vRect.top) / vRect.height;
+      const relW = jRect.width / vRect.width;
+      const relH = jRect.height / vRect.height;
+
+      // Map positions relative to background resolution
+      const destX = relX * canvas.width;
+      const destY = relY * canvas.height;
+      const destW = relW * canvas.width;
+      const destH = relH * canvas.height;
+
+      ctx.save();
+      // Center rotation anchor on the product overlay
+      ctx.translate(destX + destW / 2, destY + destH / 2);
+      
+      // If hand is flipped, mirror the canvas locally for the jewelry outline
+      if (isHandMirrored) {
+        ctx.scale(-1, 1);
+      }
+      
+      ctx.rotate((jewelryRotation * Math.PI) / 180);
+      ctx.drawImage(jewelryImg, -destW / 2, -destH / 2, destW, destH);
+      ctx.restore();
+
+      // Get captured output
+      try {
+        const capturedDataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        previewImg.src = capturedDataUrl;
+        
+        // Swap visibility state to Preview Screen
+        viewport.style.display = 'none';
+        previewContainer.style.display = 'block';
+        
+        captureBtn.style.display = 'none';
+        if (cameraBtn) cameraBtn.style.display = 'none';
+        if (handBtn) handBtn.style.display = 'none';
+        if (uploadAltBtn) uploadAltBtn.style.display = 'none';
+        if (slidersWrap) slidersWrap.style.display = 'none';
+        
+        retakeBtn.style.display = 'inline-flex';
+        shareBtn.style.display = 'inline-flex';
+        
+        // Stop active camera during snapshot review
+        stopCamera();
+      } catch (err) {
+        console.error('Failed to capture snapshot from Canvas:', err);
+        alert('Could not capture try on. Please try again.');
+      }
+    });
+
+    // Retake Live stream / photo upload
+    retakeBtn.addEventListener('click', () => {
+      previewContainer.style.display = 'none';
+      viewport.style.display = 'block';
+      
+      captureBtn.style.display = 'inline-flex';
+      if (cameraBtn && fallbackImg.style.display === 'none') cameraBtn.style.display = 'inline-flex';
+      if (handBtn) handBtn.style.display = 'inline-flex';
+      if (uploadAltBtn) uploadAltBtn.style.display = 'inline-flex';
+      if (slidersWrap) slidersWrap.style.display = 'flex';
+      
+      retakeBtn.style.display = 'none';
+      shareBtn.style.display = 'none';
+      
+      // Restart streaming if not on photo fallback
+      if (fallbackImg.style.display === 'none') {
+        startCamera();
+      }
+    });
+
+    // Share Try-On Image (Web Share API & clipboard copies)
+    shareBtn.addEventListener('click', () => {
+      const dataUrl = previewImg.src;
+
+      // Helper function: Convert base64 dataURL to Blob/File object
+      function dataURLtoFile(dataurl, filename) {
+        let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, {type:mime});
+      }
+
+      const captureFile = dataURLtoFile(dataUrl, 'abhushan-tryon.jpg');
+
+      // 1. Try Native Web Share API
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [captureFile] })) {
+        navigator.share({
+          files: [captureFile],
+          title: 'Abhushan Try-On',
+          text: `Trying on the beautiful ${productName} by Abhushan.`
+        })
+        .then(() => console.log('Successfully shared try-on screenshot.'))
+        .catch(err => {
+          console.warn('Web Share failed or cancelled:', err);
+          triggerImageDownload(dataUrl);
+        });
+      } else {
+        // 2. Clipboard copy and automated Download fallback
+        triggerImageDownload(dataUrl);
+        
+        // Copy link to clipboard
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(window.location.href)
+            .then(() => {
+              alert('Try-On photo downloaded! Product link copied to clipboard so you can share it with friends.');
+            })
+            .catch(() => {
+              alert('Try-On photo downloaded!');
+            });
+        } else {
+          alert('Try-On photo downloaded!');
+        }
+      }
+    });
+
+    function triggerImageDownload(url) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `abhushan-${config.category}-tryon.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
   console.log('%c✦ ABHUSHAN · Ahmedabad, Gujarat, India ✦', 'color:#C08B5D;font-family:Georgia,serif;font-size:14px;');
+
+  // Cleanup helper
+  window.addEventListener('beforeunload', () => {
+    const videoFeed = document.getElementById('vto-video');
+    if (videoFeed && videoFeed.srcObject) {
+      videoFeed.srcObject.getTracks().forEach(track => track.stop());
+    }
+  });
 
 })();
 
