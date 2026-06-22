@@ -13,11 +13,15 @@
 
   function onScroll() {
     const hero = document.getElementById('hero-slider');
-    const threshold = hero ? hero.offsetHeight - 80 : window.innerHeight - 80;
+    if (!hero) {
+      if (header) header.classList.add('scrolled');
+      return;
+    }
+    const threshold = hero.offsetHeight - 80;
     if (window.scrollY >= threshold) {
-      header.classList.add('scrolled');
+      if (header) header.classList.add('scrolled');
     } else {
-      header.classList.remove('scrolled');
+      if (header) header.classList.remove('scrolled');
     }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -516,188 +520,25 @@
   });
 
   /* ============================================================
-     LIVE CHAT WIDGET LOGIC
+     LIVE CHAT WIDGET LOGIC (Centralized, Persistent, Interactive)
      ============================================================ */
+  let consultantAvailable = true; // Toggle variable for offline/online state
+
   function isConsultantOnline() {
-    const now = new Date();
-    // Convert to IST (UTC + 5:30)
-    const utcHour = now.getUTCHours();
-    const utcMinute = now.getUTCMinutes();
-    let istHour = utcHour + 5;
-    let istMinute = utcMinute + 30;
-    if (istMinute >= 60) {
-      istHour += 1;
-      istMinute -= 60;
-    }
-    istHour = istHour % 24;
-    
-    // Online from 10:00 AM to 7:00 PM IST
-    return istHour >= 10 && istHour < 19;
+    return consultantAvailable;
   }
 
-  function renderPreChatForm() {
-    return `
-      <form class="chat-form" id="chat-online-form">
-        <div class="chat-form-field">
-          <label for="chat-name">Name</label>
-          <input type="text" id="chat-name" class="chat-input" placeholder="Your name" required />
-        </div>
-        <div class="chat-form-field">
-          <label for="chat-email">Email</label>
-          <input type="email" id="chat-email" class="chat-input" placeholder="Your email address" required />
-        </div>
-        <div class="chat-form-field">
-          <label for="chat-help">What can we help you with?</label>
-          <select id="chat-help" class="chat-select" required>
-            <option value="" disabled selected>Select an option</option>
-            <option value="Product Inquiry">Product Inquiry</option>
-            <option value="Custom Design">Custom Design</option>
-            <option value="Welded Forever Appointment">Welded Forever Appointment</option>
-            <option value="Order Status">Order Status</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-        <button type="submit" class="chat-submit-btn">Start Chat</button>
-      </form>
-    `;
-  }
-
-  function renderOnlineSuccess() {
-    return `
-      <div class="chat-success-state">
-        <svg class="chat-success-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <h4 class="chat-success-title">Thank You</h4>
-        <p class="chat-success-desc">A consultant will join shortly. In the meantime, here are some quick links:</p>
-        
-        <div class="chat-quick-links-title">Quick Links</div>
-        <div class="chat-quick-links-list">
-          <button class="chat-quick-link-btn" id="link-chat-book">Book a Studio Appointment</button>
-          <button class="chat-quick-link-btn" id="link-chat-browse">Browse Collections</button>
-          <button class="chat-quick-link-btn" id="link-chat-tryon">Virtual Try-On</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function renderOfflineForm() {
-    return `
-      <form class="chat-form" id="chat-offline-form-el">
-        <p class="chat-offline-desc">We're currently offline. Leave a message and we'll respond within 24 hours.</p>
-        <div class="chat-form-field">
-          <label for="chat-off-name">Name</label>
-          <input type="text" id="chat-off-name" class="chat-input" placeholder="Your name" required />
-        </div>
-        <div class="chat-form-field">
-          <label for="chat-off-email">Email</label>
-          <input type="email" id="chat-off-email" class="chat-input" placeholder="Your email address" required />
-        </div>
-        <div class="chat-form-field">
-          <label for="chat-off-msg">Message</label>
-          <textarea id="chat-off-msg" class="chat-textarea" placeholder="How can we help you?" rows="3" required></textarea>
-        </div>
-        <button type="submit" class="chat-submit-btn">Send Message</button>
-      </form>
-    `;
-  }
-
-  function renderOfflineSuccess() {
-    return `
-      <div class="chat-success-state">
-        <svg class="chat-success-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M3 19v-8.93a2 2 0 01.89-1.664l8-5.333a2 2 0 012.22 0l8 5.333A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-2.25-1.5a2 2 0 00-2.22 0l-2.25 1.5M12 22.25V19" />
-        </svg>
-        <h4 class="chat-success-title">Message Sent</h4>
-        <p class="chat-success-desc">Thank you. We have received your message and will respond within 24 hours.</p>
-        
-        <div class="chat-quick-links-title">Quick Links</div>
-        <div class="chat-quick-links-list">
-          <button class="chat-quick-link-btn" id="link-chat-book">Book a Studio Appointment</button>
-          <button class="chat-quick-link-btn" id="link-chat-browse">Browse Collections</button>
-          <button class="chat-quick-link-btn" id="link-chat-tryon">Virtual Try-On</button>
-        </div>
-      </div>
-    `;
-  }
-
-  function setupQuickLinkListeners() {
-    const btnBook = document.getElementById('link-chat-book');
-    const btnBrowse = document.getElementById('link-chat-browse');
-    const btnTryOn = document.getElementById('link-chat-tryon');
-    
-    if (btnBook) {
-      btnBook.addEventListener('click', () => {
-        const panel = document.getElementById('chat-panel');
-        if (panel) {
-          panel.classList.remove('open');
-          localStorage.setItem('abhushan_chat_open', 'false');
-        }
-        const target = document.getElementById('booking-section');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          window.location.href = 'index.html#booking-section';
-        }
-      });
-    }
-    
-    if (btnBrowse) {
-      btnBrowse.addEventListener('click', () => {
-        const panel = document.getElementById('chat-panel');
-        if (panel) {
-          panel.classList.remove('open');
-          localStorage.setItem('abhushan_chat_open', 'false');
-        }
-        const target = document.getElementById('section-category-grid');
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          window.location.href = 'index.html#section-category-grid';
-        }
-      });
-    }
-    
-    if (btnTryOn) {
-      btnTryOn.addEventListener('click', () => {
-        if (typeof showComingSoonToast === 'function') {
-          showComingSoonToast('Virtual Try-On');
-        } else {
-          alert('Virtual Try-On feature is coming soon.');
-        }
-      });
+  function getChatHistory() {
+    try {
+      const hist = localStorage.getItem('abhushan_chat_history');
+      return hist ? JSON.parse(hist) : [];
+    } catch(e) {
+      return [];
     }
   }
 
-  function setupFormListeners() {
-    const onlineForm = document.getElementById('chat-online-form');
-    const offlineForm = document.getElementById('chat-offline-form-el');
-    
-    if (onlineForm) {
-      onlineForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        localStorage.setItem('abhushan_chat_submitted', 'true');
-        const body = document.getElementById('chat-panel-body');
-        if (body) {
-          body.innerHTML = renderOnlineSuccess();
-          setupQuickLinkListeners();
-        }
-      });
-    }
-    
-    if (offlineForm) {
-      offlineForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        localStorage.setItem('abhushan_chat_offline_submitted', 'true');
-        const body = document.getElementById('chat-panel-body');
-        if (body) {
-          body.innerHTML = renderOfflineSuccess();
-          setupQuickLinkListeners();
-        }
-      });
-    }
-    
-    setupQuickLinkListeners();
+  function saveChatHistory(history) {
+    localStorage.setItem('abhushan_chat_history', JSON.stringify(history));
   }
 
   function injectChatWidget() {
@@ -705,40 +546,20 @@
 
     const container = document.createElement('div');
     container.id = 'chat-widget-container';
-    
-    const online = isConsultantOnline();
-    const isSubmitted = localStorage.getItem('abhushan_chat_submitted') === 'true';
-    const isOfflineSubmitted = localStorage.getItem('abhushan_chat_offline_submitted') === 'true';
-    
-    let bodyContent = '';
-    if (online) {
-      bodyContent = isSubmitted ? renderOnlineSuccess() : renderPreChatForm();
-    } else {
-      bodyContent = isOfflineSubmitted ? renderOfflineSuccess() : renderOfflineForm();
-    }
-    
-    // Online status indicator dot
-    const statusDot = online
-      ? `<span class="chat-status-dot online" title="Online"></span>`
-      : `<span class="chat-status-dot offline" title="Offline"></span>`;
-
-    const statusLabel = online
-      ? `<span class="chat-status-label">Available now · 10am – 7pm IST</span>`
-      : `<span class="chat-status-label">Currently offline · Leave a message</span>`;
 
     const chatIconSvg = `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
       </svg>
     `;
 
     const closeIconSvg = `
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <line x1="18" y1="6" x2="6" y2="18"/>
         <line x1="6" y1="6" x2="18" y2="18"/>
       </svg>
     `;
-    
+
     container.innerHTML = `
       <button class="chat-widget-trigger pulse-active" id="chat-trigger-btn" aria-label="Open Chat with Abhushan" aria-expanded="false" aria-controls="chat-panel">
         <span class="chat-trigger-icon">${chatIconSvg}</span>
@@ -748,24 +569,25 @@
         <div class="chat-panel-header">
           <div class="chat-header-info">
             <div class="chat-header-top-row">
-              ${statusDot}
+              <span class="chat-status-dot ${isConsultantOnline() ? 'online' : 'offline'}" title="${isConsultantOnline() ? 'Online' : 'Offline'}"></span>
               <h3 class="chat-panel-title">Chat with Abhushan</h3>
             </div>
             <p class="chat-panel-subtitle">Our jewelry consultants are here to help</p>
-            <div class="chat-status-row">${statusLabel}</div>
+            <div class="chat-status-row">
+              <span class="chat-status-label">${isConsultantOnline() ? 'Available now · 10am – 7pm IST' : 'Currently offline · Leave a message'}</span>
+            </div>
           </div>
           <button class="chat-panel-close-btn" id="chat-close-btn" aria-label="Close Chat">
             ${closeIconSvg}
           </button>
         </div>
         <div class="chat-panel-body" id="chat-panel-body">
-          ${bodyContent}
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(container);
-    
+
     const triggerBtn = document.getElementById('chat-trigger-btn');
     const panel = document.getElementById('chat-panel');
     const closeBtn = document.getElementById('chat-close-btn');
@@ -777,11 +599,7 @@
       triggerBtn.setAttribute('aria-expanded', 'true');
       triggerBtn.classList.add('is-open');
       localStorage.setItem('abhushan_chat_open', 'true');
-      // Focus first input if form present
-      setTimeout(() => {
-        const first = panel.querySelector('input, select, textarea');
-        if (first) first.focus();
-      }, 400);
+      renderCurrentChatState();
     }
 
     function closePanel() {
@@ -791,16 +609,7 @@
       triggerBtn.classList.remove('is-open');
       localStorage.setItem('abhushan_chat_open', 'false');
     }
-    
-    // Restore state from localStorage
-    if (localStorage.getItem('abhushan_chat_open') === 'true') {
-      panel.classList.add('open');
-      panel.setAttribute('aria-hidden', 'false');
-      triggerBtn.classList.remove('pulse-active');
-      triggerBtn.setAttribute('aria-expanded', 'true');
-      triggerBtn.classList.add('is-open');
-    }
-    
+
     if (triggerBtn && panel) {
       triggerBtn.addEventListener('click', () => {
         if (panel.classList.contains('open')) {
@@ -810,7 +619,7 @@
         }
       });
     }
-    
+
     if (closeBtn && panel) {
       closeBtn.addEventListener('click', closePanel);
     }
@@ -820,16 +629,244 @@
       if (e.key === 'Escape' && panel.classList.contains('open')) closePanel();
     });
 
-    // Expose openChatWidget globally for inline onclick handlers on product pages
+    // Close on click outside
+    document.addEventListener('click', (e) => {
+      if (panel.classList.contains('open') && !panel.contains(e.target) && !triggerBtn.contains(e.target)) {
+        closePanel();
+      }
+    });
+
+    // Expose openChatWidget globally
     window.openChatWidget = function(e) {
       if (e && e.preventDefault) e.preventDefault();
       openPanel();
     };
-    
-    setupFormListeners();
+
+    // Restore state from localStorage
+    if (localStorage.getItem('abhushan_chat_open') === 'true') {
+      openPanel();
+    } else {
+      renderCurrentChatState();
+    }
   }
 
+  function renderCurrentChatState() {
+    const body = document.getElementById('chat-panel-body');
+    if (!body) return;
 
+    const chatFormStored = localStorage.getItem('abhushan_chat_form');
+    if (chatFormStored) {
+      // User has already submitted the pre-chat / offline form
+      const formData = JSON.parse(chatFormStored);
+      if (formData.offline) {
+        body.innerHTML = `
+          <div class="chat-success-state">
+            <svg class="chat-success-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" fill="none" width="56" height="56">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h4 class="chat-success-title">Message Received</h4>
+            <p class="chat-success-desc">We're currently offline. Thank you for leaving a message, ${formData.name}. We will get back to you at ${formData.email} within 24 hours.</p>
+            <div class="chat-quick-links-wrap">
+              <button class="chat-quick-link-btn" onclick="scrollToSection('#booking-section')">Book Studio Appointment</button>
+              <button class="chat-quick-link-btn" onclick="scrollToSection('#section-products')">Browse Collections</button>
+            </div>
+          </div>
+        `;
+      } else {
+        renderConversationView(body, formData);
+      }
+    } else {
+      // Show pre-chat or offline form
+      if (isConsultantOnline()) {
+        body.innerHTML = `
+          <form class="chat-form" id="chat-prechat-form">
+            <div class="chat-form-field">
+              <label for="chat-name">Name</label>
+              <input type="text" id="chat-name" class="chat-input" placeholder="Your name" required />
+            </div>
+            <div class="chat-form-field">
+              <label for="chat-email">Email</label>
+              <input type="email" id="chat-email" class="chat-input" placeholder="Your email address" required />
+            </div>
+            <div class="chat-form-field">
+              <label for="chat-help">What can we help you with?</label>
+              <select id="chat-help" class="chat-select" required>
+                <option value="" disabled selected>Select an option</option>
+                <option value="Product Inquiry">Product Inquiry</option>
+                <option value="Custom Design">Custom Design</option>
+                <option value="Welded Forever Appointment">Welded Forever Appointment</option>
+                <option value="Order Status">Order Status</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <button type="submit" class="chat-submit-btn">Start Chat</button>
+          </form>
+        `;
+        document.getElementById('chat-prechat-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('chat-name').value;
+          const email = document.getElementById('chat-email').value;
+          const topic = document.getElementById('chat-help').value;
+          const formData = { name, email, topic, offline: false };
+          localStorage.setItem('abhushan_chat_form', JSON.stringify(formData));
+          
+          // Seed initial messages
+          const history = [
+            { sender: 'system', text: 'Thanks! A consultant will join shortly. In the meantime, here are some quick links:' },
+            { sender: 'consultant', text: `Hi ${name}, thank you for contacting Abhushan. How can I help you today with your ${topic} inquiry?` }
+          ];
+          saveChatHistory(history);
+          renderConversationView(body, formData);
+        });
+      } else {
+        body.innerHTML = `
+          <form class="chat-form" id="chat-offline-form">
+            <p class="chat-offline-desc">We're currently offline. Leave a message and we'll respond within 24 hours.</p>
+            <div class="chat-form-field">
+              <label for="chat-off-name">Name</label>
+              <input type="text" id="chat-off-name" class="chat-input" placeholder="Your name" required />
+            </div>
+            <div class="chat-form-field">
+              <label for="chat-off-email">Email</label>
+              <input type="email" id="chat-off-email" class="chat-input" placeholder="Your email address" required />
+            </div>
+            <div class="chat-form-field">
+              <label for="chat-off-msg">Message</label>
+              <textarea id="chat-off-msg" class="chat-offline-msg-textarea" placeholder="How can we help you?" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="chat-submit-btn">Send Message</button>
+          </form>
+        `;
+        document.getElementById('chat-offline-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('chat-off-name').value;
+          const email = document.getElementById('chat-off-email').value;
+          const msg = document.getElementById('chat-off-msg').value;
+          const formData = { name, email, msg, offline: true };
+          localStorage.setItem('abhushan_chat_form', JSON.stringify(formData));
+          renderCurrentChatState();
+        });
+      }
+    }
+  }
+
+  function renderConversationView(body, formData) {
+    body.innerHTML = `
+      <div class="chat-conversation-wrap">
+        <div class="chat-messages-container" id="chat-msg-log">
+        </div>
+        <form class="chat-input-footer" id="chat-msg-send-form">
+          <input type="text" id="chat-message-text" class="chat-message-input" placeholder="Type a message..." autocomplete="off" required />
+          <button type="submit" class="chat-send-btn">Send</button>
+        </form>
+      </div>
+    `;
+
+    const log = document.getElementById('chat-msg-log');
+    const sendForm = document.getElementById('chat-msg-send-form');
+    const input = document.getElementById('chat-message-text');
+
+    function loadMessages() {
+      const history = getChatHistory();
+      log.innerHTML = '';
+      history.forEach(msg => {
+        if (msg.sender === 'system') {
+          const systemDiv = document.createElement('div');
+          systemDiv.className = 'chat-message-bubble system';
+          systemDiv.innerHTML = `
+            <div>${msg.text}</div>
+            <div class="chat-quick-links-wrap">
+              <button class="chat-quick-link-btn" onclick="scrollToSection('#booking-section')">Book Studio Appointment</button>
+              <button class="chat-quick-link-btn" onclick="scrollToSection('#section-products')">Browse Collections</button>
+              <button class="chat-quick-link-btn" onclick="triggerTryOnFromChat()">Virtual Try-On</button>
+            </div>
+          `;
+          log.appendChild(systemDiv);
+        } else {
+          const msgDiv = document.createElement('div');
+          msgDiv.className = `chat-message-bubble ${msg.sender}`;
+          msgDiv.textContent = msg.text;
+          log.appendChild(msgDiv);
+        }
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    loadMessages();
+
+    // Consultant generic automated replies
+    const consultantReplies = [
+      "Let me check that detail for you. Solid 18K/22K gold values are updated daily.",
+      "That's a gorgeous choice! We also offer custom engraving in our Ahmedabad studio.",
+      "We'd love to host you for a studio session. You can book an appointment using the quick link below.",
+      "Our Welded Forever bracelets are welded shut in 14K solid gold. Let me know if you want to book a slot!",
+      "I'm here to help. Feel free to ask about our sizing guides or shipping times."
+    ];
+    let replyIndex = 0;
+
+    sendForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      const history = getChatHistory();
+      history.push({ sender: 'user', text: userText });
+      saveChatHistory(history);
+      input.value = '';
+      loadMessages();
+
+      // Show typing indicator
+      const typingEl = document.createElement('div');
+      typingEl.className = 'chat-typing-indicator';
+      typingEl.id = 'chat-typing-el';
+      typingEl.innerHTML = `
+        <span class="chat-typing-dot"></span>
+        <span class="chat-typing-dot"></span>
+        <span class="chat-typing-dot"></span>
+      `;
+      log.appendChild(typingEl);
+      log.scrollTop = log.scrollHeight;
+
+      setTimeout(() => {
+        const indicator = document.getElementById('chat-typing-el');
+        if (indicator) indicator.remove();
+
+        const replyText = consultantReplies[replyIndex];
+        replyIndex = (replyIndex + 1) % consultantReplies.length;
+
+        const updatedHistory = getChatHistory();
+        updatedHistory.push({ sender: 'consultant', text: replyText });
+        saveChatHistory(updatedHistory);
+        loadMessages();
+      }, 1200);
+    });
+  }
+
+  // Global helpers exposed for chat clicks
+  window.scrollToSection = function(selector) {
+    const el = document.querySelector(selector);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+      const panel = document.getElementById('chat-panel');
+      if (panel) panel.classList.remove('open');
+      localStorage.setItem('abhushan_chat_open', 'false');
+    } else {
+      window.location.href = 'index.html' + selector;
+    }
+  };
+
+  window.triggerTryOnFromChat = function() {
+    const panel = document.getElementById('chat-panel');
+    if (panel) panel.classList.remove('open');
+    localStorage.setItem('abhushan_chat_open', 'false');
+    
+    const tryOnTrigger = document.getElementById('vto-trigger-btn');
+    if (tryOnTrigger) {
+      tryOnTrigger.click();
+    } else {
+      showToast("Navigate to any product detail page to try it on! ✦");
+    }
+  };
   /* ============================================================
      SEARCH FUNCTIONALITY LOGIC
      ============================================================ */
@@ -941,7 +978,7 @@
     }
 
     // 3. Bind event listeners
-    const triggerBtn = document.getElementById('search-trigger-btn-header');
+    triggerBtn = triggerBtn || document.getElementById('search-trigger-btn-header');
     const closeBtn = document.getElementById('search-overlay-close-btn');
     const inputField = document.getElementById('search-input-field');
     const resultsContainer = document.getElementById('search-results');
@@ -1061,7 +1098,9 @@
     injectChatWidget();
     injectSearchWidget();
     initMicroInteractions();
-    // VTO is handled inline on product detail pages
+    initWishlist();
+    initVirtualTryOn();
+    initNewsletterPopup();
   }
   if (typeof window !== 'undefined') {
     if (document.readyState === 'loading') {
@@ -1236,7 +1275,7 @@
     const productName = titleEl ? titleEl.textContent.trim() : 'Jewelry Piece';
 
     // Map product names to categories and transparent card assets
-    const productMap = {
+    const VTO_OVERLAY_MAP = {
       'threadbare ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' },
       'tomboy ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring2.png' },
       'hammered hoop earring': { category: 'earring', overlay: 'images/_Product Cards/prod_earring1.png' },
@@ -1245,7 +1284,7 @@
     };
 
     const normName = productName.toLowerCase();
-    const config = productMap[normName] || { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' };
+    const config = VTO_OVERLAY_MAP[normName] || { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' };
 
     // Alignment Guide SVG Silhouettes
     const handSvg = `
@@ -2078,6 +2117,8 @@
       }
     ];
 
+    const WISHLIST_CATALOG = PRODUCTS;
+
     // Map product page filename → product data (for PDP pages)
     const PDP_MAP = {
       'product-threadbare-ring.html': PRODUCTS[0],
@@ -2495,6 +2536,133 @@
       videoFeed.srcObject.getTracks().forEach(track => track.stop());
     }
   });
+
+  function initNewsletterPopup() {
+    // 1. Frequency Filters Checks
+    if (sessionStorage.getItem('abhushan_popup_shown') === 'true') {
+      return;
+    }
+    const closedTime = localStorage.getItem('abhushan_popup_closed');
+    if (closedTime) {
+      const diff = Date.now() - parseInt(closedTime, 10);
+      const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      if (diff < sevenDaysMs) {
+        return;
+      }
+    }
+
+    let popupTriggered = false;
+    let timerId = null;
+
+    function triggerPopup() {
+      if (popupTriggered) return;
+      popupTriggered = true;
+      if (timerId) clearTimeout(timerId);
+      window.removeEventListener('scroll', checkScrollPosition);
+
+      sessionStorage.setItem('abhushan_popup_shown', 'true');
+
+      const overlay = document.createElement('div');
+      overlay.id = 'newsletter-popup-overlay';
+      overlay.className = 'newsletter-popup-overlay';
+
+      overlay.innerHTML = `
+        <div class="newsletter-popup-card">
+          <button type="button" class="newsletter-popup-close" id="newsletter-close-btn" aria-label="Close newsletter popup">&times;</button>
+          <div class="newsletter-popup-content">
+            <h3 class="newsletter-popup-title">Join the Circle</h3>
+            <p class="newsletter-popup-sub">Subscribe to receive private collection previews, heritage stories, and 10% off your first commission.</p>
+            <form id="newsletter-popup-form" class="newsletter-popup-form">
+              <input type="email" id="newsletter-email-input" class="newsletter-popup-input" placeholder="Your email address" required aria-label="Email address" />
+              <button type="submit" class="newsletter-popup-btn">Subscribe</button>
+            </form>
+            <p class="newsletter-popup-trust">We value your privacy. Unsubscribe at any time.</p>
+            <div id="newsletter-success-msg" class="newsletter-popup-success" style="display: none;">
+              <p class="newsletter-popup-success-title">Welcome to the circle.</p>
+              <p class="newsletter-popup-success-desc">As a thank you, here's 10% off your first order.</p>
+              <div class="newsletter-popup-coupon-box" id="coupon-box" style="cursor: pointer;" title="Click to copy coupon code">
+                WELCOME10
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      requestAnimationFrame(() => {
+        overlay.classList.add('active');
+        document.body.classList.add('newsletter-popup-open');
+      });
+
+      const emailInput = document.getElementById('newsletter-email-input');
+      if (emailInput) setTimeout(() => emailInput.focus(), 300);
+
+      const closeBtn = document.getElementById('newsletter-close-btn');
+      const closePopup = () => {
+        overlay.classList.remove('active');
+        document.body.classList.remove('newsletter-popup-open');
+        localStorage.setItem('abhushan_popup_closed', Date.now().toString());
+        setTimeout(() => overlay.remove(), 400);
+      };
+
+      closeBtn.addEventListener('click', closePopup);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) closePopup();
+      });
+
+      const escapeHandler = (e) => {
+        if (e.key === 'Escape') {
+          closePopup();
+          window.removeEventListener('keydown', escapeHandler);
+        }
+      };
+      window.addEventListener('keydown', escapeHandler);
+
+      const form = document.getElementById('newsletter-popup-form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        if (!email) return;
+
+        let emailsList = [];
+        try {
+          emailsList = JSON.parse(localStorage.getItem('abhushan_newsletter_emails')) || [];
+        } catch (err) {
+          emailsList = [];
+        }
+        emailsList.push({ email: email, date: new Date().toISOString() });
+        localStorage.setItem('abhushan_newsletter_emails', JSON.stringify(emailsList));
+
+        form.style.display = 'none';
+        const successMsg = document.getElementById('newsletter-success-msg');
+        successMsg.style.display = 'flex';
+
+        const couponBox = document.getElementById('coupon-box');
+        couponBox.addEventListener('click', () => {
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText('WELCOME10')
+              .then(() => {
+                const originalText = couponBox.textContent.trim();
+                couponBox.textContent = 'COPIED!';
+                setTimeout(() => { couponBox.innerHTML = 'WELCOME10'; }, 2000);
+              });
+          }
+        });
+      });
+    }
+
+    function checkScrollPosition() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      if (scrollHeight > 0 && (scrollTop / scrollHeight) >= 0.6) {
+        triggerPopup();
+      }
+    }
+
+    timerId = setTimeout(triggerPopup, 15000);
+    window.addEventListener('scroll', checkScrollPosition, { passive: true });
+  }
 
 })();
 
