@@ -13,15 +13,27 @@
 
   function onScroll() {
     const hero = document.getElementById('hero-slider');
+    const chatContainer = document.getElementById('chat-widget-container');
+    
     if (!hero) {
       if (header) header.classList.add('scrolled');
+      if (chatContainer) chatContainer.classList.add('chat-visible');
       return;
     }
+    
     const threshold = hero.offsetHeight - 80;
     if (window.scrollY >= threshold) {
       if (header) header.classList.add('scrolled');
     } else {
       if (header) header.classList.remove('scrolled');
+    }
+    
+    if (chatContainer) {
+      if (window.scrollY >= hero.offsetHeight - 100) {
+        chatContainer.classList.add('chat-visible');
+      } else {
+        chatContainer.classList.remove('chat-visible');
+      }
     }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -648,6 +660,9 @@
     } else {
       renderCurrentChatState();
     }
+
+    // Initialize visibility state based on current scroll position
+    onScroll();
   }
 
   function renderCurrentChatState() {
@@ -2192,6 +2207,27 @@
       // Try finding nav-top-right
       const navRight = document.querySelector('.nav-top-right');
       if (!navRight) return;
+
+      // Check if button already exists in DOM
+      let existingBtn = navRight.querySelector('.nav-wishlist-btn');
+      if (existingBtn) {
+        navWishlistBtn = existingBtn;
+        badgeEl = existingBtn.querySelector('.wishlist-badge');
+        
+        // If badge doesn't exist, create it
+        if (!badgeEl) {
+          badgeEl = document.createElement('span');
+          badgeEl.className = 'wishlist-badge';
+          badgeEl.id = 'wishlist-badge';
+          badgeEl.setAttribute('aria-live', 'polite');
+          navWishlistBtn.appendChild(badgeEl);
+        }
+        
+        navWishlistBtn.addEventListener('click', function() {
+          openDrawer();
+        });
+        return;
+      }
 
       navWishlistBtn = document.createElement('button');
       navWishlistBtn.className = 'nav-wishlist-btn';

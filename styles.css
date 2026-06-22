@@ -440,6 +440,7 @@ input, button { font-family: inherit; }
   align-items: center;
   gap: var(--space-lg);
   justify-content: flex-end;
+  margin-right: -8px;
 }
 
 .nav-container-bottom {
@@ -3901,8 +3902,18 @@ textarea:focus-visible {
   right: 0;
   z-index: 9990;
   pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+#chat-widget-container.chat-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 #chat-widget-container > * {
+  pointer-events: none;
+}
+#chat-widget-container.chat-visible > * {
   pointer-events: all;
 }
 
