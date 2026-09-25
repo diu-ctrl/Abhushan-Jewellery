@@ -584,6 +584,29 @@ window.ABHUSHAN_PRODUCTS = [
   if (bookingForm) {
     bookingForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      // PHASE 3 — deliver booking to the studio inbox (Web3Forms), graceful on failure
+      (function () {
+        var fd = {};
+        Array.prototype.forEach.call(bookingForm.elements, function (el) {
+          if (el.name && el.type !== 'submit' && el.type !== 'button') fd[el.name] = el.value;
+        });
+        fd.access_key = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
+        fd.subject = 'Abhushan — Welding Session Booking';
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(fd)
+        }).catch(function () {
+          try {
+            var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
+            fd._savedAt = new Date().toISOString();
+            fd._form = 'booking';
+            store.push(fd);
+            localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
+          } catch (err) {}
+        });
+      })();
+
       
       const name = document.getElementById('booking-name').value;
       const email = document.getElementById('booking-email').value;
@@ -703,7 +726,7 @@ window.ABHUSHAN_PRODUCTS = [
   const animEls = document.querySelectorAll(
     '.section-title, .product-card, .category-grid-item, .editorial-full-content, ' +
     '.split-text-col, .story-text-col, .story-value, .booking-card, ' +
-    '.booking-heading, .booking-sub, .footer-col, .editorial-eyebrow, ' +
+    '.booking-heading, .booking-sub, .footer-col, ' +
     '.hero-content'
   );
 
@@ -1861,6 +1884,29 @@ window.ABHUSHAN_PRODUCTS = [
       // 4. Booking Form Submit Loading Spinner & Success State
       bookingForm.addEventListener('submit', (e) => {
         e.preventDefault();
+      // PHASE 3 — deliver booking to the studio inbox (Web3Forms), graceful on failure
+      (function () {
+        var fd = {};
+        Array.prototype.forEach.call(bookingForm.elements, function (el) {
+          if (el.name && el.type !== 'submit' && el.type !== 'button') fd[el.name] = el.value;
+        });
+        fd.access_key = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
+        fd.subject = 'Abhushan — Welding Session Booking';
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(fd)
+        }).catch(function () {
+          try {
+            var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
+            fd._savedAt = new Date().toISOString();
+            fd._form = 'booking';
+            store.push(fd);
+            localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
+          } catch (err) {}
+        });
+      })();
+
         
         const submitBtn = document.getElementById('booking-submit-btn');
         if (!submitBtn) return;
@@ -3384,4 +3430,76 @@ window.ABHUSHAN_PRODUCTS = [
   })();
 
 })();
+/* ===== PHASE 3 — WEB3FORMS: newsletter/subscribe forms ===== */
+(function () {
+  'use strict';
+  var WA_NUMBER = '919979787087';
 
+  Array.prototype.forEach.call(document.querySelectorAll('.footer-subscribe-form'), function (form) {
+    if (form.__web3wired) return;
+    form.__web3wired = true;
+
+    var key = form.querySelector('input[name="access_key"]');
+    if (!key) {
+      key = document.createElement('input');
+      key.type = 'hidden';
+      key.name = 'access_key';
+      form.appendChild(key);
+    }
+    key.value = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
+
+    var subj = form.querySelector('input[name="subject"]');
+    if (!subj) {
+      subj = document.createElement('input');
+      subj.type = 'hidden';
+      subj.name = 'subject';
+      form.appendChild(subj);
+    }
+    subj.value = 'Abhushan — Newsletter Subscribe';
+
+    var status = form.querySelector('.web3-status');
+    if (!status) {
+      status = document.createElement('p');
+      status.className = 'web3-status';
+      status.setAttribute('role', 'status');
+      status.setAttribute('aria-live', 'polite');
+      form.appendChild(status);
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var emailEl = form.querySelector('input[type="email"], input[name="email"]');
+      if (!emailEl || !/^[^s@]+@[^s@]+.[^s@]+$/.test(emailEl.value.trim())) {
+        status.textContent = 'Please enter a valid email address.';
+        return;
+      }
+      var payload = {};
+      Array.prototype.forEach.call(form.elements, function (el) {
+        if (el.name && el.type !== 'submit' && el.type !== 'button') payload[el.name] = el.value;
+      });
+      status.textContent = 'Sending\u2026';
+      fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res.success) throw new Error(res.message || 'Send failed');
+          status.textContent = 'Thank you \u2014 you\u2019re on the list.';
+          form.reset();
+        })
+        .catch(function () {
+          try {
+            var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
+            payload._savedAt = new Date().toISOString();
+            payload._form = 'subscribe';
+            store.push(payload);
+            localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
+          } catch (err) {}
+          status.innerHTML = 'We couldn\u2019t reach the studio just now. ' +
+            '<a href="https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent('Namaste Abhushan — I\'d like studio news and early access.') + '" target="_blank" rel="noopener">Join via WhatsApp instead</a>.';
+        });
+    });
+  });
+})();

@@ -1829,7 +1829,8 @@ select {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  transform: scale(1.08) translate(2%, -2%);
+  /* removed in Phase 3: white strip source: transform: scale(1.08) translate(2%, -2%); */
+  transform: none;
 }
 .split-image-col img,
 .editorial-full-image img {
@@ -7611,4 +7612,98 @@ body { font-size: var(--ab-body); }
 }
 .site-header.menu-open .hamburger span {
   background-color: var(--color-text) !important;
+}
+/* ===== PHASE 3 FIX — HERO FULL-BLEED, NO WHITE BORDERS ===== */
+.hero-section-tiffany {
+  height: 100vh;                 /* fallback */
+  height: 100svh;                /* small-viewport height: kills the bottom strip on mobile */
+  margin: 0;
+  padding: 0 !important;
+  border: 0;
+  box-shadow: none;
+}
+.hero-image-container-tiffany {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+}
+.hero-bg-img {
+  position: absolute;
+  inset: -3% 0;                  /* crops 3% top+bottom: guarantees no white hairline of any origin */
+  width: 100%;
+  height: 106%;
+  object-fit: cover;
+  object-position: center;
+  transform: none;
+}
+/* ===== PHASE 3 — THREE EDITS: compact vertical cards ===== */
+.edits-row-tiffany {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: stretch;
+  gap: 14px;
+  padding: 40px 20px 8px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.edit-card-tiffany {
+  flex: 0 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border, #E7E1D8);
+  padding: 14px 14px 16px;
+  text-align: left;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.edit-card-tiffany:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,.08); }
+.edit-card-media-tiffany { display: block; aspect-ratio: 3 / 4; overflow: hidden; }
+.edit-card-media-tiffany img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.edit-card-title-tiffany {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 15px;
+  letter-spacing: .04em;
+  color: var(--color-text, #1c1c1c);
+}
+.edit-card-sub-tiffany {
+  font-family: 'Jost', sans-serif;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--color-text-light, #6b6b6b);
+}
+@media (max-width: 640px) {
+  .edits-row-tiffany { gap: 10px; padding: 28px 14px 4px; }
+  .edit-card-tiffany { flex: 1 1 0; padding: 10px 10px 12px; }
+  .edit-card-title-tiffany { font-size: 13px; }
+  .edit-card-sub-tiffany { display: none; }
+}
+/* ===== PHASE 3 — WELDED FOREVER FIT NOTE ===== */
+.welded-note-tiffany {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-text-light, #6b6b6b);
+  font-style: italic;
+  margin: 6px 0 10px;
+}
+/* ===== PHASE 3 — LOGO ALWAYS RETURNS TO HERO ===== */
+html { scroll-behavior: smooth; }
+a.logo-link { text-decoration: none; color: inherit; display: inline-block; }
+/* ===== PHASE 3 — WEB3FORMS STATUS LINE ===== */
+.web3-status { font-size: 12.5px; line-height: 1.5; margin: 10px 0 0; min-height: 16px; }
+.web3-status a { text-decoration: underline; }
+/* ===== PHASE 3 — SECTION RHYTHM ===== */
+:root { --sp-section: clamp(56px, 8vw, 88px); }
+.section-category-grid,
+.section-featured-collection,
+.section-experience-tiffany,
+.section-booking-tiffany {
+  padding-top: var(--sp-section);
+  padding-bottom: var(--sp-section);
 }
