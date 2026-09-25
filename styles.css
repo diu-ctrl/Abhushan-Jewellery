@@ -7823,3 +7823,31 @@ a.logo-link { text-decoration: none; color: inherit; display: inline-block; }
   padding-top: var(--sp-section);
   padding-bottom: var(--sp-section);
 }
+/* ===== PHASE 4 — LINING FIGURES: all digits on one even row ===== */
+html {
+  font-variant-numeric: lining-nums;
+  -webkit-font-feature-settings: "lnum" 1;
+  font-feature-settings: "lnum" 1;
+}
+button, input, select, textarea {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}
+/* numeric-heavy UI: guarantee even digits even if a font ignores lnum */
+.product-price,
+.product-price-detail-tiffany,
+.bag-item-price,
+.bag-subtotal strong,
+.bag-emi,
+.bag-ship p,
+.price-section-title,
+.stat-num,
+.ck-line,
+.ck-row,
+.ck-row strong,
+.ck-order-id,
+.size-option-btn-tiffany,
+.size-label-tiffany {
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1;
+}

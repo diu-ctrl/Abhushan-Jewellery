@@ -7,7 +7,8 @@
   var CONFIG = {
     WHATSAPP_NUMBER: '919979787087', // digits only, no +
     CURRENCY: '₹',
-    FREE_SHIP: 10000
+    FREE_SHIP: 10000,
+    SHIP_FEE: 199
   };
   var KEY = 'abhushan_cart_v1';
   var PRODUCTS = {
@@ -201,10 +202,7 @@
         + shipBlock + emi
         + '<div class="bag-subtotal"><span>Subtotal</span><strong>' + inr(sub) + '</strong></div>'
         + '<div class="bag-ctas">'
-        + (CONFIG.WHATSAPP_NUMBER.indexOf('OWNER-INPUT') === -1
-            ? '<button type="button" class="bag-cta bag-cta-primary" id="bag-wa">Send Order on WhatsApp</button>'
-            : '')
-        + '<button type="button" class="bag-cta bag-cta-secondary" id="bag-email">Reserve by Email</button>'
+        + '<button type="button" class="bag-cta bag-cta-primary" id="bag-checkout">Checkout</button>'
         + '</div>'
         + '<p class="bag-note">We confirm every order personally within 2 hours · Mon–Sat 10 AM – 7 PM IST</p>';
     drawer.innerHTML = '<div class="bag-header"><h2 class="bag-title">Your Bag' + (n ? ' <span class="bag-count">(' + n + ')</span>' : '') + '</h2>'
@@ -215,10 +213,8 @@
         items.splice(parseInt(b.getAttribute('data-idx'),10), 1); save(); updateBadge(); render();
       });
     });
-    var wa = document.getElementById('bag-wa');
-    if (wa) wa.addEventListener('click', checkoutWhatsApp);
-    var em = document.getElementById('bag-email');
-    if (em) em.addEventListener('click', checkoutEmail);
+    var co = document.getElementById('bag-checkout');
+    if (co) co.addEventListener('click', openCheckout);
   }
   function openDrawer(){ if (!drawer) buildShell(); render(); overlay.classList.add('open'); drawer.classList.add('open'); document.body.style.overflow = 'hidden'; }
   function closeDrawer(){ if (!drawer) return; overlay.classList.remove('open'); drawer.classList.remove('open'); document.body.style.overflow = ''; }
@@ -244,30 +240,263 @@
   function addFromWishlist(name){ add(name, null); }
 
   /* ---------- checkout ---------- */
-  function orderLines(){
-    return items.map(function(i){ return '• ' + i.name + (i.size ? ' (Size ' + i.size + ')' : '') + ' — ' + inr(i.price); }).join('\n');
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
   }
-  function checkoutWhatsApp(){
-    if (!count()) return;
-    var msg = 'Namaste Abhushan —\nI would like to order:\n\n' + orderLines()
-      + '\n\nSubtotal: ' + inr(subtotal())
-      + (subtotal() >= CONFIG.FREE_SHIP ? '\nFree insured shipping applied' : '')
-      + '\n\nSent from abhushan-by-divyaraj.vercel.app';
-    window.open('https://wa.me/919979787087?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+
+  /* ---------- checkout modal (Phase 4) ---------- */
+  var ckOverlay = null;
+
+  function shipFor(sub){ return sub >= CONFIG.FREE_SHIP ? 0 : CONFIG.SHIP_FEE; }
+
+  function buildCheckoutShell(){
+    if (ckOverlay) return;
+    ckOverlay = document.createElement('div');
+    ckOverlay.className = 'ck-overlay';
+    ckOverlay.id = 'ck-overlay';
+    ckOverlay.innerHTML =
+      '<div class="ck-modal" role="dialog" aria-modal="true" aria-labelledby="ck-title">'
+      + '<div class="ck-head"><h2 id="ck-title">Checkout</h2>'
+      + '<button type="button" class="ck-close" id="ck-close" aria-label="Close checkout">&times;</button></div>'
+      + '<div class="ck-body">'
+      + '<div class="ck-invoice"><h3 class="ck-h3">Order Summary</h3><div id="ck-lines"></div>'
+      + '<div class="ck-row"><span>Subtotal</span><strong id="ck-sub"></strong></div>'
+      + '<div class="ck-row"><span>Insured shipping</span><strong id="ck-ship"></strong></div>'
+      + '<div class="ck-row ck-total"><span>Total</span><strong id="ck-total"></strong></div></div>'
+      + '<form id="ck-form" novalidate>'
+      + '<h3 class="ck-h3">Your Details</h3>'
+      + '<p class="ck-why">We use these only to confirm and deliver your order.</p>'
+      + '<label class="ck-field">Full name<input type="text" name="ck-name" autocomplete="name" placeholder="Your full name"></label>'
+      + '<label class="ck-field">Phone (WhatsApp)<input type="tel" name="ck-phone" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number"></label>'
+      + '<label class="ck-field">Email<input type="email" name="ck-email" autocomplete="email" placeholder="you@example.com"></label>'
+      + '<label class="ck-field">Delivery address<input type="text" name="ck-address" autocomplete="street-address" placeholder="House / street / area"></label>'
+      + '<div class="ck-two">'
+      + '<label class="ck-field">City<input type="text" name="ck-city" placeholder="City"></label>'
+      + '<label class="ck-field">PIN code<input type="text" name="ck-pin" inputmode="numeric" placeholder="6-digit PIN"></label>'
+      + '</div>'
+      + '<label class="ck-field">Notes — size, gift wrap, occasion<input type="text" name="ck-notes" placeholder="Anything we should know"></label>'
+      + '<p class="ck-error" id="ck-error" role="alert"></p>'
+      + '</form>'
+      + '</div>'
+      + '<div class="ck-foot">'
+      + '<button type="button" class="bag-cta bag-cta-secondary" id="ck-cancel">Cancel</button>'
+      + '<button type="button" class="bag-cta bag-cta-primary" id="ck-place">Order</button>'
+      + '</div>'
+      + '</div>';
+    document.body.appendChild(ckOverlay);
+    document.getElementById('ck-close').addEventListener('click', closeCheckout);
+    document.getElementById('ck-cancel').addEventListener('click', closeCheckout);
+    ckOverlay.addEventListener('click', function(e){ if (e.target === ckOverlay) closeCheckout(); });
+    document.getElementById('ck-place').addEventListener('click', placeOrder);
   }
-  function checkoutEmail(){
+
+  function fillInvoice(){
+    var el = document.getElementById('ck-lines');
+    if (el) el.innerHTML = items.map(function(i){
+      return '<div class="ck-line"><span>' + esc(i.name) + (i.size ? ' · Size ' + esc(i.size) : '') + '</span><span>' + inr(i.price) + '</span></div>';
+    }).join('');
+    var sub = subtotal(), ship = shipFor(sub);
+    document.getElementById('ck-sub').textContent = inr(sub);
+    document.getElementById('ck-ship').textContent = ship === 0 ? 'Free' : inr(ship);
+    document.getElementById('ck-total').textContent = inr(sub + ship);
+  }
+
+  function openCheckout(){
     if (!count()) return;
-    if (window.AbhushanNotify && window.AbhushanNotify.send) {
-      var lines = orderLines();
-      window.AbhushanNotify.send('Order reservation — ' + inr(subtotal()), {
-        order_items: lines, subtotal: inr(subtotal()), page: location.href
-      }).then(function () {
-        toast('Reservation sent — we confirm within 2 hours (Mon–Sat 10–7 IST)');
-      });
-    } else {
-      toast('WhatsApp is the fastest way to order right now');
-      checkoutWhatsApp();
+    buildCheckoutShell();
+    fillInvoice();
+    var err = document.getElementById('ck-error');
+    if (err) err.textContent = '';
+    closeDrawer();
+    ckOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    var first = ckOverlay.querySelector('input[name="ck-name"]');
+    if (first) setTimeout(function(){ first.focus(); }, 120);
+  }
+
+  function closeCheckout(){
+    if (!ckOverlay) return;
+    ckOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function orderId(){
+    var d = new Date();
+    var ymd = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+    return 'ABH-' + ymd + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+  }
+
+  function orderLinesText(o){
+    return o.items.map(function(i){
+      return '• ' + i.name + (i.size ? ' (Size ' + i.size + ')' : '') + ' — ' + inr(i.price);
+    }).join('\n');
+  }
+
+  function orderEmailText(o){
+    var c = o.customer;
+    return 'NEW ORDER — Abhushan Studio\n'
+      + 'Order ID: ' + o.id + '\n'
+      + 'Placed: ' + new Date(o.at).toLocaleString('en-IN') + '\n\n'
+      + 'CUSTOMER\nName: ' + c.name + '\nPhone: ' + c.phone + '\nEmail: ' + c.email + '\n'
+      + 'Address: ' + (c.address || '—') + (c.city ? ', ' + c.city : '') + (c.pin ? ' — ' + c.pin : '') + '\n'
+      + 'Notes: ' + (c.notes || '—') + '\n\n'
+      + 'ITEMS\n' + orderLinesText(o) + '\n\n'
+      + 'Subtotal: ' + inr(o.subtotal) + '\n'
+      + 'Shipping: ' + (o.shipping === 0 ? 'Free (insured)' : inr(o.shipping)) + '\n'
+      + 'ORDER TOTAL: ' + inr(o.total) + '\n\n'
+      + 'Source: ' + (o.page || 'website');
+  }
+
+  function orderWhatsappText(o){
+    var c = o.customer;
+    return 'Namaste Abhushan — my order ' + o.id + '\n\n'
+      + 'Name: ' + c.name + '\nPhone: ' + c.phone + '\n'
+      + (c.address ? 'Address: ' + c.address + (c.city ? ', ' + c.city : '') + (c.pin ? ' — ' + c.pin : '') + '\n' : '')
+      + '\nItems:\n' + orderLinesText(o)
+      + '\n\nSubtotal: ' + inr(o.subtotal)
+      + '\nShipping: ' + (o.shipping === 0 ? 'Free' : inr(o.shipping))
+      + '\nTotal: ' + inr(o.total)
+      + (c.notes ? '\nNotes: ' + c.notes : '');
+  }
+
+  function placeOrder(){
+    if (!count() || !ckOverlay) return;
+    var get = function(n){
+      var el = ckOverlay.querySelector('[name="' + n + '"]');
+      return el ? el.value.trim() : '';
+    };
+    var name = get('ck-name');
+    var phone = get('ck-phone').replace(/[\s\-]/g, '').replace(/^\+91/, '');
+    var email = get('ck-email');
+    var address = get('ck-address'), city = get('ck-city');
+    var pin = get('ck-pin').replace(/\s/g, ''), notes = get('ck-notes');
+    var err = document.getElementById('ck-error');
+
+    var problems = [];
+    if (name.length < 2) problems.push('your full name');
+    if (!/^[6-9]\d{9}$/.test(phone)) problems.push('a valid 10-digit mobile number');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) problems.push('a valid email address');
+    if (pin && !/^\d{6}$/.test(pin)) problems.push('a valid 6-digit PIN (or leave it empty)');
+    if (problems.length){
+      err.textContent = 'Please enter ' + problems.join(', ') + '.';
+      return;
     }
+    err.textContent = '';
+
+    var btn = document.getElementById('ck-place');
+    btn.disabled = true;
+    btn.textContent = 'Placing order\u2026';
+
+    var ship = shipFor(subtotal());
+    var order = {
+      id: orderId(),
+      at: new Date().toISOString(),
+      customer: { name: name, phone: phone, email: email, address: address, city: city, pin: pin, notes: notes },
+      items: items.map(function(i){ return { name: i.name, price: i.price, size: i.size || null }; }),
+      subtotal: subtotal(),
+      shipping: ship,
+      total: subtotal() + ship,
+      status: 'new',
+      page: location.href
+    };
+
+    /* 1) local record — this is what the Admin Portal Orders tab reads */
+    try {
+      var arr = JSON.parse(localStorage.getItem('abhushan_orders_v1') || '[]');
+      arr.push(order);
+      localStorage.setItem('abhushan_orders_v1', JSON.stringify(arr));
+    } catch (e) {}
+
+    /* 2) email the studio — Web3Forms via notify.js, now WITH full customer details */
+    var emailPromise = (window.AbhushanNotify && window.AbhushanNotify.send)
+      ? window.AbhushanNotify.send(
+          'New Order ' + order.id + ' — ' + order.customer.name,
+          {
+            order_id: order.id,
+            name: order.customer.name,
+            phone: order.customer.phone,
+            email: order.customer.email,
+            address: (order.customer.address + (order.customer.city ? ', ' + order.customer.city : '') + (order.customer.pin ? ' — ' + order.customer.pin : '')) || '—',
+            notes: order.customer.notes || '—',
+            order_items: orderLinesText(order).replace(/• /g, ''),
+            order_subtotal: inr(order.subtotal),
+            order_shipping: order.shipping === 0 ? 'Free (insured)' : inr(order.shipping),
+            order_total: inr(order.total),
+            message: orderEmailText(order)
+          },
+          order.customer.email
+        )
+      : Promise.resolve({ success: false });
+
+    /* 3) clear bag, close checkout, show confirmation */
+    items = [];
+    save();
+    updateBadge();
+    render();
+    closeCheckout();
+    btn.disabled = false;
+    btn.textContent = 'Order';
+    showConfirmation(order, emailPromise);
+  }
+
+  /* ---------- confirmation popup (Phase 4) ---------- */
+  var ckConfirm = null;
+
+  function buildConfirmShell(){
+    if (ckConfirm) return;
+    ckConfirm = document.createElement('div');
+    ckConfirm.className = 'ck-overlay';
+    ckConfirm.id = 'ck-confirm-overlay';
+    ckConfirm.innerHTML =
+      '<div class="ck-modal ck-confirm" role="dialog" aria-modal="true" aria-labelledby="ckc-title">'
+      + '<div class="ck-checkmark" aria-hidden="true"><span></span></div>'
+      + '<h2 id="ckc-title">Order received</h2>'
+      + '<p class="ck-order-id">Order ID: <strong id="ckc-id"></strong></p>'
+      + '<p class="ck-confirm-sub" id="ckc-sub"></p>'
+      + '<div class="ck-confirm-summary" id="ckc-summary"></div>'
+      + '<div class="ck-foot">'
+      + '<button type="button" class="bag-cta bag-cta-secondary" id="ck-wa">Send order summary via WhatsApp</button>'
+      + '<button type="button" class="bag-cta bag-cta-primary" id="ck-done">Done</button>'
+      + '</div>'
+      + '</div>';
+    document.body.appendChild(ckConfirm);
+    document.getElementById('ck-done').addEventListener('click', function(){
+      ckConfirm.classList.remove('open');
+      document.body.style.overflow = '';
+      toast('Thank you — your order is with the studio');
+    });
+  }
+
+  function showConfirmation(order, emailPromise){
+    buildConfirmShell();
+    document.getElementById('ckc-id').textContent = order.id;
+    document.getElementById('ckc-summary').innerHTML =
+      order.items.map(function(i){
+        return '<div class="ck-line"><span>' + esc(i.name) + (i.size ? ' · Size ' + esc(i.size) : '') + '</span><span>' + inr(i.price) + '</span></div>';
+      }).join('')
+      + '<div class="ck-row ck-total"><span>Total (incl. shipping)</span><strong>' + inr(order.total) + '</strong></div>';
+    ckConfirm.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    var waBtn = document.getElementById('ck-wa');
+    waBtn.onclick = function(){
+      var url = (window.AbhushanNotify && window.AbhushanNotify.whatsappLink)
+        ? window.AbhushanNotify.whatsappLink(orderWhatsappText(order))
+        : 'https://wa.me/' + CONFIG.WHATSAPP_NUMBER + '?text=' + encodeURIComponent(orderWhatsappText(order));
+      window.open(url, '_blank', 'noopener');
+    };
+
+    var sub = document.getElementById('ckc-sub');
+    sub.textContent = 'Sending your order to the studio\u2026';
+    emailPromise.then(function(res){
+      if (res && res.success === true) {
+        sub.textContent = 'Your order has been emailed to the studio. We confirm personally within 2 hours · Mon–Sat 10 AM – 7 PM IST.';
+      } else {
+        sub.innerHTML = 'The studio email could not be sent just now — please tap <strong>Send order summary via WhatsApp</strong> so we receive your order. We confirm within 2 hours · Mon–Sat 10 AM – 7 PM IST.';
+      }
+    });
   }
 
   load();

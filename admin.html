@@ -800,6 +800,21 @@
         text-align: center;
       }
     }
+
+    /* PHASE 4 — lining figures in the portal */
+    html, button, input, select, textarea {
+      font-variant-numeric: lining-nums;
+      font-feature-settings: "lnum" 1;
+    }
+
+    /* PHASE 4 — tabs + orders */
+    .admin-tabs { display: flex; gap: 8px; margin: 0 0 18px; }
+    .admin-tab { padding: 10px 18px; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; border-radius: 4px; }
+    .admin-tab.active { background: #1c1c1c; color: #fff; border-color: #1c1c1c; }
+    .orders-banner { background: #FFF7E8; border: 1px solid #EAD9B0; color: #7A5B1E; padding: 10px 14px; border-radius: 4px; font-size: 13.5px; margin: 0 0 14px; line-height: 1.5; }
+    #orders-table select.order-status { padding: 4px 6px; font-size: 13px; }
+    #orders-table .ord-items { font-size: 12.5px; line-height: 1.45; text-align: left; }
+    #orders-table .ord-del { background: none; border: 1px solid #e3b7b7; color: #A33B2E; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -840,6 +855,12 @@
       </a>
     </header>
 
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab active" id="tab-appointments">Appointments</button>
+      <button type="button" class="admin-tab" id="tab-orders">Orders</button>
+    </div>
+
+    <div id="appointments-section">
     <!-- Metrics Cards Grid -->
     <section class="stats-grid">
       <div class="stat-card total">
@@ -914,6 +935,53 @@
         <p>No customer records match your filter criteria or the database is empty.</p>
       </div>
     </section>
+    </div>
+
+    <div id="orders-section" style="display: none;">
+      <div class="orders-banner">
+        Orders placed in THIS browser appear here automatically (localStorage). Orders placed on a
+        customer's device reach you by EMAIL (Web3Forms) — that email is the master record for those.
+        Every order email now contains the customer's name, phone, email, address and notes.
+      </div>
+      <section class="stats-grid">
+        <div class="stat-card total"><div class="stat-label">Total Orders</div><div class="stat-num" id="ostat-total">0</div></div>
+        <div class="stat-card pending"><div class="stat-label">New</div><div class="stat-num" id="ostat-new">0</div></div>
+        <div class="stat-card approved"><div class="stat-label">Delivered</div><div class="stat-num" id="ostat-delivered">0</div></div>
+        <div class="stat-card completed"><div class="stat-label">Revenue</div><div class="stat-num" id="ostat-revenue">0</div></div>
+      </section>
+      <section class="toolbar-wrap">
+        <div class="search-filter-group">
+          <input type="text" id="order-search" class="search-input" placeholder="Search by order ID, name, phone, email..." />
+          <select id="order-status-filter" class="filter-select">
+            <option value="all">All statuses</option>
+            <option value="new">New</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+        <div class="action-buttons-group">
+          <button type="button" id="btn-orders-export" class="btn-secondary btn-export">Export CSV</button>
+          <button type="button" id="btn-orders-refresh" class="btn-secondary">Refresh</button>
+          <button type="button" id="btn-orders-clear" class="btn-danger">Clear Orders</button>
+        </div>
+      </section>
+      <section class="table-container">
+        <table id="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th><th>Placed</th><th>Customer</th><th>Phone</th>
+              <th>Email</th><th>Items</th><th>Total</th><th>Status</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="orders-body"></tbody>
+        </table>
+        <div id="orders-empty" class="empty-state" style="display:none;">
+          <p>No orders yet. Place a test order from the website in this browser, or wait for customer order emails.</p>
+        </div>
+      </section>
+    </div>
 
     <!-- Bottom Return Nav Bar Removed -->
 
@@ -1405,6 +1473,130 @@
           toast.classList.remove('show');
         }, 3000);
       }
+
+      /* ===== PHASE 4 — ORDERS TAB ===== */
+      const ORDERS_KEY = 'abhushan_orders_v1';
+      const ORDER_STATUSES = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+      const tabAppointments = document.getElementById('tab-appointments');
+      const tabOrders = document.getElementById('tab-orders');
+      const appointmentsSection = document.getElementById('appointments-section');
+      const ordersSection = document.getElementById('orders-section');
+      const ordersBody = document.getElementById('orders-body');
+      const ordersEmpty = document.getElementById('orders-empty');
+      const orderSearch = document.getElementById('order-search');
+      const orderStatusFilter = document.getElementById('order-status-filter');
+
+      function getOrders() {
+        try { return JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); }
+        catch (e) { return []; }
+      }
+      function saveOrders(list) {
+        localStorage.setItem(ORDERS_KEY, JSON.stringify(list));
+      }
+      function orderMoney(n) {
+        return '₹' + Number(n).toLocaleString('en-IN');
+      }
+      function orderItemsText(items) {
+        return (items || []).map(i => i.name + (i.size ? ' (Size ' + i.size + ')' : ''));
+      }
+      function renderOrders() {
+        const all = getOrders();
+        const q = (orderSearch.value || '').trim().toLowerCase();
+        const st = orderStatusFilter.value;
+        const list = all.filter(o => {
+          if (st !== 'all' && (o.status || 'new') !== st) return false;
+          if (!q) return true;
+          const hay = [o.id, o.customer && o.customer.name, o.customer && o.customer.phone,
+                       o.customer && o.customer.email].join(' ').toLowerCase();
+          return hay.indexOf(q) !== -1;
+        });
+        ordersBody.innerHTML = '';
+        list.slice().reverse().forEach(o => {
+          const tr = document.createElement('tr');
+          const itemsTxt = orderItemsText(o.items).join(', ') || '—';
+          const when = o.at ? new Date(o.at).toLocaleString('en-IN') : '—';
+          const sel = '<select class="order-status" data-id="' + o.id + '">'
+            + ORDER_STATUSES.map(s => '<option value="' + s + '"' + ((o.status || 'new') === s ? ' selected' : '') + '>'
+              + s.charAt(0).toUpperCase() + s.slice(1) + '</option>').join('')
+            + '</select>';
+          tr.innerHTML =
+            '<td>' + o.id + '</td>' +
+            '<td>' + when + '</td>' +
+            '<td>' + (o.customer ? o.customer.name : '—') + '</td>' +
+            '<td>' + (o.customer ? o.customer.phone : '—') + '</td>' +
+            '<td>' + (o.customer ? o.customer.email : '—') + '</td>' +
+            '<td class="ord-items">' + itemsTxt + '</td>' +
+            '<td>' + orderMoney(o.total) + '</td>' +
+            '<td>' + sel + '</td>' +
+            '<td><button type="button" class="ord-del" data-id="' + o.id + '">Delete</button></td>';
+          ordersBody.appendChild(tr);
+        });
+        ordersEmpty.style.display = list.length ? 'none' : 'block';
+        renderOrderStats(all);
+      }
+      function renderOrderStats(all) {
+        document.getElementById('ostat-total').textContent = all.length;
+        document.getElementById('ostat-new').textContent = all.filter(o => (o.status || 'new') === 'new').length;
+        document.getElementById('ostat-delivered').textContent = all.filter(o => o.status === 'delivered').length;
+        const rev = all.filter(o => o.status !== 'cancelled')
+                       .reduce((s, o) => s + (Number(o.total) || 0), 0);
+        document.getElementById('ostat-revenue').textContent = orderMoney(rev);
+      }
+      ordersBody.addEventListener('change', e => {
+        const sel = e.target.closest('select.order-status');
+        if (!sel) return;
+        const list = getOrders();
+        const o = list.find(x => x.id === sel.getAttribute('data-id'));
+        if (o) { o.status = sel.value; saveOrders(list); renderOrders(); }
+      });
+      ordersBody.addEventListener('click', e => {
+        const btn = e.target.closest('.ord-del');
+        if (!btn) return;
+        if (!window.confirm('Delete order ' + btn.getAttribute('data-id') + '? This cannot be undone.')) return;
+        saveOrders(getOrders().filter(x => x.id !== btn.getAttribute('data-id')));
+        renderOrders();
+      });
+      orderSearch.addEventListener('input', renderOrders);
+      orderStatusFilter.addEventListener('change', renderOrders);
+      document.getElementById('btn-orders-refresh').addEventListener('click', renderOrders);
+      document.getElementById('btn-orders-clear').addEventListener('click', () => {
+        if (!window.confirm('This will wipe the local orders database on this browser. Continue?')) return;
+        saveOrders([]);
+        renderOrders();
+      });
+      document.getElementById('btn-orders-export').addEventListener('click', () => {
+        const rows = [['Order ID', 'Placed', 'Name', 'Phone', 'Email', 'Address', 'Items', 'Subtotal', 'Shipping', 'Total', 'Status', 'Notes']];
+        getOrders().forEach(o => rows.push([
+          o.id, o.at || '', o.customer && o.customer.name || '', o.customer && o.customer.phone || '',
+          o.customer && o.customer.email || '',
+          [o.customer && o.customer.address, o.customer && o.customer.city, o.customer && o.customer.pin].filter(Boolean).join(' '),
+          orderItemsText(o.items).join(' | '), o.subtotal, o.shipping, o.total, o.status || 'new',
+          o.customer && o.customer.notes || ''
+        ]));
+        const csv = rows.map(r => r.map(c => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.setAttribute('download', 'abhushan_orders_' + new Date().toISOString().split('T')[0] + '.csv');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      });
+      function showTab(which) {
+        const isOrders = which === 'orders';
+        tabOrders.classList.toggle('active', isOrders);
+        tabAppointments.classList.toggle('active', !isOrders);
+        ordersSection.style.display = isOrders ? 'block' : 'none';
+        appointmentsSection.style.display = isOrders ? 'none' : 'block';
+        if (isOrders) renderOrders();
+      }
+      tabAppointments.addEventListener('click', () => showTab('appointments'));
+      tabOrders.addEventListener('click', () => showTab('orders'));
+      // re-render orders when the tab becomes visible after login
+      const ordersObserver = new MutationObserver(() => {
+        if (ordersSection.style.display !== 'none') renderOrders();
+      });
+      ordersObserver.observe(ordersSection, { attributes: true, attributeFilter: ['style'] });
 
       // Check Authentication Status on Page Load
       checkAuth();
