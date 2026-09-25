@@ -5,7 +5,7 @@
 (function () {
   'use strict';
   var CONFIG = {
-    WHATSAPP_NUMBER: 'OWNER-INPUT-919XXXXXXXXX', // digits only, no +
+    WHATSAPP_NUMBER: '919979787087', // digits only, no +
     CURRENCY: '₹',
     FREE_SHIP: 10000
   };
@@ -91,11 +91,11 @@
     }).join('');
     var remain = CONFIG.FREE_SHIP - sub;
     var shipPct = Math.max(0, Math.min(100, (sub / CONFIG.FREE_SHIP) * 100));
-    var shipBlock = n === 0 ? '' :
+      var shipBlock = n === 0 ? '' :
       '<div class="bag-ship">'
       + (remain > 0
           ? '<p>' + inr(remain) + ' away from <strong>free insured shipping</strong></p>'
-          : '<p class="unlocked">✦ Free insured shipping unlocked</p>')
+          : '<p class="unlocked">Free insured shipping unlocked</p>')
       + '<div class="bag-ship-bar"><span style="width:' + shipPct + '%"></span></div></div>';
     var emi = n === 0 ? '' : '<p class="bag-emi">or ' + inr(sub/12) + '/month with 12-month EMI at 0% interest</p>';
     var body = n === 0
@@ -131,7 +131,7 @@
     var p = PRODUCTS[name]; if (!p) return;
     items.push({ name: name, price: p.price, img: p.img, href: p.href, size: size || null });
     save(); updateBadge(); render();
-    toast('✓ ' + name + ' added to your bag');
+    toast(name + ' added to your bag');
     if (badge) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
   }
   function addByName(name){
@@ -152,18 +152,23 @@
   }
   function checkoutWhatsApp(){
     if (!count()) return;
-    var msg = 'Namaste Abhushan ✦\nI would like to order:\n\n' + orderLines()
+    var msg = 'Namaste Abhushan —\nI would like to order:\n\n' + orderLines()
       + '\n\nSubtotal: ' + inr(subtotal())
       + (subtotal() >= CONFIG.FREE_SHIP ? '\nFree insured shipping applied' : '')
       + '\n\nSent from abhushan-by-divyaraj.vercel.app';
-    window.open('https://wa.me/' + CONFIG.WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+    window.open('https://wa.me/919979787087?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   }
   function checkoutEmail(){
     if (!count()) return;
-    if (window.AbhushanNotify && window.AbhushanNotify.order) {
-      window.AbhushanNotify.order(items, subtotal(), inr);
+    if (window.AbhushanNotify && window.AbhushanNotify.send) {
+      var lines = orderLines();
+      window.AbhushanNotify.send('Order reservation — ' + inr(subtotal()), {
+        order_items: lines, subtotal: inr(subtotal()), page: location.href
+      }).then(function () {
+        toast('Reservation sent — we confirm within 2 hours (Mon–Sat 10–7 IST)');
+      });
     } else {
-      toast('WhatsApp is the fastest way to order right now ✦');
+      toast('WhatsApp is the fastest way to order right now');
       checkoutWhatsApp();
     }
   }

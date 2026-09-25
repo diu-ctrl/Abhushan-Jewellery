@@ -294,9 +294,15 @@
       
       appointments.push(newBooking);
       localStorage.setItem('abhushan_appointments', JSON.stringify(appointments));
+      if (window.AbhushanNotify) {
+        window.AbhushanNotify.send('Studio booking ' + bookingId + ' — ' + service, {
+          booking_id: bookingId, name: name, email: email, phone: phone,
+          date: date, time: time, service: service, notes: notes
+        }, email);
+      }
       
       // Show confirmation toast
-      showToast(`Success! Booking ${bookingId} requested. We will contact you soon. ✦`);
+      showToast(`Success! Booking ${bookingId} requested. We will contact you soon.`);
       
       // Reset form
       bookingForm.reset();
@@ -588,6 +594,7 @@
             <div class="chat-status-row">
               <span class="chat-status-label">${isConsultantOnline() ? 'Available now · 10am – 7pm IST' : 'Currently offline · Leave a message'}</span>
             </div>
+            <a class="chat-wa-btn" href="#" id="chat-wa-btn" target="_blank" rel="noopener">WhatsApp the Studio</a>
           </div>
           <button class="chat-panel-close-btn" id="chat-close-btn" aria-label="Close Chat">
             ${closeIconSvg}
@@ -599,6 +606,11 @@
     `;
 
     document.body.appendChild(container);
+
+    var waBtn = document.getElementById('chat-wa-btn');
+    if (waBtn && window.AbhushanNotify) {
+      waBtn.setAttribute('href', window.AbhushanNotify.whatsappLink('Namaste Abhushan — I have a question about your jewellery.'));
+    }
 
     const triggerBtn = document.getElementById('chat-trigger-btn');
     const panel = document.getElementById('chat-panel');
@@ -724,6 +736,9 @@
           const topic = document.getElementById('chat-help').value;
           const formData = { name, email, topic, offline: false };
           localStorage.setItem('abhushan_chat_form', JSON.stringify(formData));
+          if (window.AbhushanNotify) {
+            window.AbhushanNotify.send('Chat request — ' + topic, { name: name, email: email, topic: topic }, email);
+          }
           
           // Seed initial messages
           const history = [
@@ -759,6 +774,9 @@
           const msg = document.getElementById('chat-off-msg').value;
           const formData = { name, email, msg, offline: true };
           localStorage.setItem('abhushan_chat_form', JSON.stringify(formData));
+          if (window.AbhushanNotify) {
+            window.AbhushanNotify.send('Chat message (offline) — ' + name, { name: name, email: email, message: msg }, email);
+          }
           renderCurrentChatState();
         });
       }
@@ -811,11 +829,7 @@
 
     // Consultant generic automated replies
     const consultantReplies = [
-      "Let me check that detail for you. Solid 18K/22K gold values are updated daily.",
-      "That's a gorgeous choice! We also offer custom engraving in our Ahmedabad studio.",
-      "We'd love to host you for a studio session. You can book an appointment using the quick link below.",
-      "Our Welded Forever bracelets are welded shut in 14K solid gold. Let me know if you want to book a slot!",
-      "I'm here to help. Feel free to ask about our sizing guides or shipping times."
+      "I'm the Abhushan studio assistant — a real goldsmith replies on WhatsApp within studio hours (Mon–Sat 10–7 IST). Tap the WhatsApp button above, or leave a message below and we'll email you back."
     ];
     let replyIndex = 0;
 
@@ -2660,6 +2674,9 @@
         }
         emailsList.push({ email: email, date: new Date().toISOString() });
         localStorage.setItem('abhushan_newsletter_emails', JSON.stringify(emailsList));
+        if (window.AbhushanNotify) {
+          window.AbhushanNotify.send('Newsletter signup — popup', { email: email, source: 'popup' }, email);
+        }
 
         form.style.display = 'none';
         const successMsg = document.getElementById('newsletter-success-msg');
@@ -2690,6 +2707,26 @@
     timerId = setTimeout(triggerPopup, 15000);
     window.addEventListener('scroll', checkScrollPosition, { passive: true });
   }
+
+  (function initFooterSubscribe() {
+    var form = document.getElementById('footer-subscribe-form');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = form.querySelector('input[type="email"]');
+      var email = input ? input.value.trim() : '';
+      if (!email) return;
+      var list = [];
+      try { list = JSON.parse(localStorage.getItem('abhushan_newsletter_emails')) || []; } catch (err) {}
+      list.push({ email: email, date: new Date().toISOString(), source: 'footer' });
+      localStorage.setItem('abhushan_newsletter_emails', JSON.stringify(list));
+      if (window.AbhushanNotify) {
+        window.AbhushanNotify.send('Newsletter signup — Inner Circle', { email: email, source: 'footer' }, email);
+      }
+      input.value = '';
+      if (typeof showToast === 'function') showToast('Welcome to the Inner Circle');
+    });
+  })();
 
 })();
 

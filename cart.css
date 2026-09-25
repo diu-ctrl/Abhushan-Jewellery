@@ -59,3 +59,7 @@
 .size-selector-wrap-tiffany.shake { animation: sizeShake .4s ease; }
 @keyframes sizeShake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
 @media (max-width: 480px) { .bag-drawer { padding: 22px 18px; } }
+
+/* Chat WhatsApp CTA (Prompt 3) */
+.chat-wa-btn { display: inline-block; margin-top: 8px; padding: 8px 14px; background: var(--color-gold, #C08B5D); color: #fff !important; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; border-radius: 2px; }
+.chat-wa-btn:hover { background: #a9764c; }
