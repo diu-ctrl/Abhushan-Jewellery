@@ -1829,8 +1829,8 @@ select {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  /* removed in Phase 3: white strip source: transform: scale(1.08) translate(2%, -2%); */
-  transform: none;
+  transform: scale(1.09);
+  transform-origin: center center;
 }
 .split-image-col img,
 .editorial-full-image img {
@@ -7669,12 +7669,13 @@ body { font-size: var(--ab-body); }
 }
 .hero-bg-img {
   position: absolute;
-  inset: -3% 0;                  /* crops 3% top+bottom: guarantees no white hairline of any origin */
+  inset: 0;
   width: 100%;
-  height: 106%;
+  height: 100%;
   object-fit: cover;
   object-position: center;
-  transform: none;
+  transform: scale(1.09);
+  transform-origin: center center;
 }
 /* ===== THREE EDITS: vertical cards matching How We Work section ===== */
 .edits-row-tiffany {
