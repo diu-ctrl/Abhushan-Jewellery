@@ -1504,7 +1504,7 @@ main {
   inset: 0;
   background: rgba(26, 23, 20, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 200;
+  z-index: 90;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--dur) var(--ease);
@@ -7555,6 +7555,9 @@ textarea:focus-visible {
   margin-top: 60px;
   opacity: 0.7;
 }
+
+/* Mobile menu: guarantee readable contrast regardless of overlay state */
+.mobile-menu.open .mobile-nav-link { color: var(--color-text); opacity: 1; }
 
 
 

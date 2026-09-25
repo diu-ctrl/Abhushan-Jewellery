@@ -892,7 +892,7 @@
       category: "Rings",
       image: "images/_Product Cards/prod_ring1.png",
       url: "product-threadbare-ring.html",
-      keywords: ["ring", "threadbare", "thin", "band", "minimalist", "18k", "gold", "stacking"]
+      keywords: ["ring", "threadbare", "thin", "band", "minimalist", "18k", "gold", "stacking", "gift", "gifts", "wedding", "bridal"]
     },
     {
       name: "Hammered Hoop Earring",
@@ -900,7 +900,7 @@
       category: "Earrings",
       image: "images/_Product Cards/prod_earring1.png",
       url: "product-hammered-hoop.html",
-      keywords: ["earring", "hammered", "hoop", "circular", "18k", "gold"]
+      keywords: ["earring", "hammered", "hoop", "circular", "18k", "gold", "gift", "gifts", "wedding", "bridal"]
     },
     {
       name: "Greco Lariat",
@@ -908,7 +908,7 @@
       category: "Necklaces",
       image: "images/_Product Cards/prod_necklace1.png",
       url: "product-greco-lariat.html",
-      keywords: ["necklace", "lariat", "greco", "chain", "pendant", "22k", "gold", "emerald"]
+      keywords: ["necklace", "lariat", "greco", "chain", "pendant", "22k", "gold", "emerald", "gift", "gifts", "wedding", "bridal"]
     },
     {
       name: "Sweet Nothing Bracelet",
@@ -916,7 +916,7 @@
       category: "Bracelets",
       image: "images/_Product Cards/prod_bracelet1.png",
       url: "product-sweet-nothing.html",
-      keywords: ["bracelet", "sweet", "nothing", "chain", "thin", "18k", "gold"]
+      keywords: ["bracelet", "sweet", "nothing", "chain", "thin", "18k", "gold", "gift", "gifts", "wedding", "bridal", "welded", "forever", "permanent"]
     },
     {
       name: "Tomboy Ring",
@@ -924,7 +924,7 @@
       category: "Rings",
       image: "images/_Product Cards/prod_ring2.png",
       url: "product-tomboy-ring.html",
-      keywords: ["ring", "tomboy", "bold", "matte", "brushed", "18k", "gold"]
+      keywords: ["ring", "tomboy", "bold", "matte", "brushed", "18k", "gold", "gift", "gifts", "wedding", "bridal"]
     }
   ];
 
@@ -973,11 +973,11 @@
           <div class="popular-searches-section-tiffany" id="popular-searches">
             <h4 class="search-section-title-tiffany">Popular Searches</h4>
             <div class="popular-tags-tiffany">
-              <button type="button" class="popular-tag-pill-tiffany" data-query="Emerald Rings">Emerald Rings</button>
-              <button type="button" class="popular-tag-pill-tiffany" data-query="Welded Forever">Welded Forever</button>
-              <button type="button" class="popular-tag-pill-tiffany" data-query="Bridal Sets">Bridal Sets</button>
-              <button type="button" class="popular-tag-pill-tiffany" data-query="Gold Chains">Gold Chains</button>
-              <button type="button" class="popular-tag-pill-tiffany" data-query="Custom Lockets">Custom Lockets</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Rings">Rings</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Necklaces">Necklaces</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Earrings">Earrings</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Bracelets">Bracelets</button>
+              <button type="button" class="popular-tag-pill-tiffany" data-query="Gifts">Gifts</button>
             </div>
           </div>
           <!-- Search Results Dropdown -->
@@ -1128,17 +1128,6 @@
 
   // Sophisticated Micro-Interactions & Hover Effects
   function initMicroInteractions() {
-    // 1. Inject Quick View Button into Product Cards
-    const productWraps = document.querySelectorAll('.product-image-wrap');
-    productWraps.forEach(wrap => {
-      if (!wrap.querySelector('.quick-view-overlay-btn')) {
-        const btn = document.createElement('div');
-        btn.className = 'quick-view-overlay-btn';
-        btn.textContent = 'Quick View';
-        wrap.appendChild(btn);
-      }
-    });
-
     // 2. Parallax Scrolling for Split Editorial Images
     const parallaxImages = document.querySelectorAll('.split-img-col-tiffany img');
     if (parallaxImages.length > 0 && window.IntersectionObserver) {
@@ -1850,6 +1839,7 @@
     // Only run on product detail pages
     var priceEl = document.querySelector('.product-price-detail-tiffany');
     if (!priceEl) return;
+    if (document.querySelector('.product-emi-container-tiffany')) return; // static EMI accordion already present on PDPs
 
     // ── Parse price from the DOM (handles ₹3,999 / ₹32,999 formats)
     function parseINR(str) {
