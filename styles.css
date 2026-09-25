@@ -7962,3 +7962,50 @@ html, body { overflow-x: hidden; overflow-x: clip; }
   z-index: 10052;
   max-width: 100vw;
 }
+
+/* ============================================================
+   PHASE 7 — CHAT PANEL: transform slide (iOS-safe) + FOOTER REDESIGN
+   ============================================================ */
+
+/* 1) Mobile chat panel: slide with transform instead of bottom:%.
+      Percent-based `bottom` animation is unreliable on iOS Safari (dynamic
+      toolbar changes the viewport mid-animation); transform is GPU-composited
+      and deterministic. Closed = pushed fully below the screen. */
+@media (max-width: 640px) {
+  .chat-widget-panel {
+    bottom: 0;
+    transform: translateY(105%);
+    opacity: 1;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: transform;
+  }
+  .chat-widget-panel.open {
+    transform: translateY(0);
+  }
+}
+
+/* 2) Footer — three centered columns (Inner Circle column removed).
+      Mirrors the existing responsive ladder (3 / 2 / 1 columns). */
+.footer-inner {
+  grid-template-columns: repeat(3, 1fr) !important;
+  border-bottom: none !important; /* single line stays on .footer-bottom only */
+}
+@media (max-width: 1024px) {
+  .footer-inner { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 768px) {
+  .footer-inner { grid-template-columns: 1fr !important; }
+}
+
+/* 3) Instagram row — centered at the bottom of the footer,
+      directly above the .footer-bottom horizontal line */
+.footer-socials-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--space-xl) var(--space-xl);
+}
+.footer-socials-row .social-link {
+  width: 34px;
+  height: 34px;
+}

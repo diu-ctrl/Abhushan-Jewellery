@@ -958,8 +958,17 @@ window.ABHUSHAN_PRODUCTS = [
       localStorage.setItem('abhushan_chat_open', 'false');
     }
 
+    /* PHASE 7 FIX — deterministic chat toggle on mobile:
+       1) stopPropagation keeps the opening tap from also hitting the document-level
+          "close on outside click" handler (which could instantly re-close the panel),
+       2) the 450ms guard ignores ghost/double-fire taps some mobile browsers emit. */
+    let lastPanelToggle = 0;
     if (triggerBtn && panel) {
-      triggerBtn.addEventListener('click', () => {
+      triggerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const now = Date.now();
+        if (now - lastPanelToggle < 450) return;
+        lastPanelToggle = now;
         if (panel.classList.contains('open')) {
           closePanel();
         } else {
