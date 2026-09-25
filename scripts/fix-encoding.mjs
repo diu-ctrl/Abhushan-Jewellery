@@ -2,6 +2,15 @@ import fs from 'fs';
 import path from 'path';
 
 const MAP = new Map([
+  ['\u00E2\u0153\u00A6', '·'],         // âœ¦ -> middle dot
+  ['\u00F0\u0153\u00A6', ''],          // ðœ¦ -> removed
+  ['\u00E2\u201C\u02DC', ''],          // â“˜ -> removed
+  ['\u00C3\u00A9', 'é'],               // Ã© -> é
+  ['âœ¦', '·'],
+  ['ðœ¦', ''],
+  ['â“˜', ''],
+  ['Ã©', 'é'],
+
   // Each key is the mojibake of one real character (UTF-8 bytes mis-read as cp1252).
   ['\u00E2\u201A\u00B9', '\u20B9'],   // mojibake of the rupee sign
   ['\u00E2\u017E\u201D', ''],          // mojibake of the heavy arrow glyph - removed entirely
@@ -29,6 +38,7 @@ const MAP = new Map([
 ]);
 
 function fixText(t) {
+  if (t.charCodeAt(0) === 0xFEFF) t = t.slice(1);
   for (const [k, v] of MAP) t = t.split(k).join(v);
   t = t.replace(/[\u0090-\u009F\u0080-\u008F]/g, '');  // stray C1 controls
   t = t.replace(/\u00C2(?![\u0080-\u00BF])/g, '');      // lone Â
