@@ -139,6 +139,7 @@
 
 
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="cart.css" />
 
 
 
@@ -1639,7 +1640,7 @@
 
 
 
-            <button type="button" class="size-option-btn-tiffany active" onclick="selectSize(this)">5</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">6</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">7</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">8</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">9</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">10</button>
+            <button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">5</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">6</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">7</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">8</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">9</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">10</button>
 
 
 
@@ -3004,33 +3005,7 @@
 
 
     function addToBag(productName) {
-
-
-
-      // Show simple coming soon toast via shared JS
-
-
-
-      if (window.showComingSoonToast) {
-
-
-
-        window.showComingSoonToast(productName + " (Add to Bag)");
-
-
-
-      } else {
-
-
-
-        alert("The \"" + productName + "\" is coming soon to your bag.");
-
-
-
-      }
-
-
-
+      if (window.AbhushanCart) { window.AbhushanCart.addByName(productName); }
     }
   </script>
 
@@ -3483,6 +3458,18 @@
 
 
   </div>
+
+
+
+
+
+
+
+  
+
+
+
+    <script src="cart.js"></script>
 
 
 

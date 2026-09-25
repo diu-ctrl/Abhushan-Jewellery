@@ -1,0 +1,61 @@
+/* =============================================================
+   ABHUSHAN — Bag drawer · matches design tokens in styles.css
+   ============================================================= */
+.bag-overlay {
+  position: fixed; inset: 0; background: rgba(26,23,20,0.5);
+  opacity: 0; pointer-events: none; transition: opacity .3s cubic-bezier(.25,.46,.45,.94);
+  z-index: 9992;
+}
+.bag-overlay.open { opacity: 1; pointer-events: all; }
+.bag-drawer {
+  position: fixed; top: 0; right: 0; height: 100dvh; width: min(420px, 100vw);
+  background: var(--color-bg, #FAF8F4); color: var(--color-text, #322325);
+  z-index: 9993; transform: translateX(100%); transition: transform .38s cubic-bezier(.25,.46,.45,.94);
+  display: flex; flex-direction: column; padding: 28px 26px; overflow-y: auto;
+  box-shadow: -12px 0 48px rgba(0,0,0,.14);
+}
+.bag-drawer.open { transform: translateX(0); }
+.bag-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--color-border, #E2DDD8); }
+.bag-title { font-family: 'Playfair Display', Georgia, serif; font-weight: 400; font-size: 24px; margin: 0; letter-spacing: .01em; }
+.bag-count { color: var(--color-gold, #C08B5D); font-size: 18px; }
+.bag-close { background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: var(--color-text, #322325); padding: 4px 8px; }
+.bag-list { flex: 0 1 auto; overflow-y: auto; margin: 6px 0 12px; }
+.bag-item { display: flex; gap: 14px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--color-border, #E2DDD8); animation: bagIn .35s both; }
+@keyframes bagIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.bag-item-thumb { width: 72px; height: 88px; flex: 0 0 auto; border-radius: 999px 999px 6px 6px; overflow: hidden; background: var(--color-beige, #E2D9CF); display: block; }
+.bag-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.bag-item-info { flex: 1; }
+.bag-item-name { margin: 0; font-size: 15px; letter-spacing: .02em; }
+.bag-item-size { margin: 2px 0 0; font-size: 12px; color: var(--color-text-light, #6B6460); text-transform: uppercase; letter-spacing: .08em; }
+.bag-item-price { margin: 6px 0 0; font-size: 14px; color: var(--color-text-light, #6B6460); }
+.bag-item-remove { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--color-text-muted, #9C9490); padding: 6px; }
+.bag-item-remove:hover { color: var(--color-text, #322325); }
+.bag-ship { margin: 14px 0 4px; }
+.bag-ship p { margin: 0 0 6px; font-size: 12.5px; letter-spacing: .04em; color: var(--color-text-light, #6B6460); }
+.bag-ship p.unlocked { color: var(--color-emerald, #226836); }
+.bag-ship-bar { height: 3px; background: var(--color-border, #E2DDD8); border-radius: 2px; overflow: hidden; }
+.bag-ship-bar span { display: block; height: 100%; background: var(--color-gold, #C08B5D); transition: width .4s ease; }
+.bag-emi { margin: 10px 0 0; font-size: 12.5px; color: var(--color-text-light, #6B6460); font-style: italic; }
+.bag-subtotal { display: flex; justify-content: space-between; align-items: baseline; padding: 16px 0 6px; font-size: 15px; letter-spacing: .05em; text-transform: uppercase; }
+.bag-subtotal strong { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 500; }
+.bag-ctas { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+.bag-cta { display: block; width: 100%; padding: 15px 18px; text-align: center; font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; transition: all .25s ease; border: 1px solid transparent; }
+.bag-cta-primary { background: var(--color-gold, #C08B5D); color: #fff; }
+.bag-cta-primary:hover { background: #a9764c; }
+.bag-cta-secondary { background: transparent; color: var(--color-text, #322325); border-color: var(--color-text, #322325); }
+.bag-cta-secondary:hover { background: var(--color-text, #322325); color: #fff; }
+.bag-note { margin: 14px 0 0; font-size: 11.5px; text-align: center; color: var(--color-text-muted, #9C9490); letter-spacing: .03em; }
+.bag-empty { text-align: center; padding: 56px 8px; }
+.bag-empty-title { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; margin: 0 0 8px; }
+.bag-empty-sub { font-size: 13.5px; color: var(--color-text-light, #6B6460); margin: 0 0 22px; line-height: 1.6; }
+.bag-empty .bag-cta { display: inline-block; width: auto; }
+.nav-bag-btn { position: relative; background: none; border: none; cursor: pointer; color: inherit; padding: 6px; display: inline-flex; }
+.bag-badge { position: absolute; top: -2px; right: -4px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--color-gold, #C08B5D); color: #fff; font-size: 10px; line-height: 16px; text-align: center; padding: 0 4px; opacity: 0; transform: scale(.6); transition: all .25s ease; }
+.bag-badge.visible { opacity: 1; transform: scale(1); }
+.bag-badge.pop { animation: bagPop .35s ease; }
+@keyframes bagPop { 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.bag-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(12px); background: #1a1714; color: #fff; padding: 13px 26px; font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: .05em; z-index: 10002; opacity: 0; transition: all .35s ease; pointer-events: none; }
+.bag-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.size-selector-wrap-tiffany.shake { animation: sizeShake .4s ease; }
+@keyframes sizeShake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+@media (max-width: 480px) { .bag-drawer { padding: 22px 18px; } }

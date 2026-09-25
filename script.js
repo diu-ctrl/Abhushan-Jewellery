@@ -2427,14 +2427,15 @@
       var moveAllBtn = drawerEl.querySelector('#wl-move-all');
       if (moveAllBtn) {
         moveAllBtn.addEventListener('click', function() {
-          showToast('\u2713 All items added to bag!', null, null);
-          // Clear wishlist after moving
-          wishlist = [];
-          save();
-          updateBadge();
-          refreshDrawer();
-          updateCardHearts();
-          updatePDPHeart();
+          if (window.AbhushanCart && wishlist.length) {
+            wishlist.forEach(function(p) { window.AbhushanCart.addFromWishlist(p.name); });
+            wishlist = [];
+            save();
+            updateBadge();
+            refreshDrawer();
+            updateCardHearts();
+            updatePDPHeart();
+          }
         });
       }
     }
