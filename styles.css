@@ -7864,3 +7864,64 @@ button, input, select, textarea {
   font-variant-numeric: lining-nums;
   font-feature-settings: "lnum" 1;
 }
+
+/* ============================================================
+   PHASE 5 — MOBILE RESPONSIVE OVERHAUL (appended)
+   Fixes measured on a 393px viewport: product pages rendered
+   504–511px wide (Chrome shrink-to-fit), collection page showed
+   one giant card per screen, drawer/checkout clipped.
+   ============================================================ */
+
+/* B1 - global guard: content may never widen the layout viewport.
+   overflow-x:hidden is the legacy fallback; clip is the modern one. */
+html, body { overflow-x: hidden; overflow-x: clip; }
+
+/* B1a - PDP reviews: 3 columns forced ~495px of content into 361px */
+@media (max-width: 992px) {
+  .reviews-grid-detail-tiffany { grid-template-columns: 1fr; }
+}
+
+/* B1b - related-products carousel on PDPs: its -24px margins exceeded the
+   16px section padding below 992px -> 409px container. Scoped to the PDP
+   related section so the collection grid is never affected. */
+@media (max-width: 992px) {
+  .product-related-section-tiffany .products-grid-tiffany {
+    margin-left: calc(-1 * var(--space-md));
+    margin-right: calc(-1 * var(--space-md));
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+  .product-related-section-tiffany .products-grid-tiffany .product-card { flex: 0 0 200px; }
+}
+
+/* B2 - collection grid: stylesheet-controlled at every width */
+#collection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 36px 28px;
+}
+@media (max-width: 768px) {
+  #collection-grid {
+    display: grid !important;                        /* beats any stale inline/flex rule */
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 30px 12px;
+  }
+  #collection-grid .product-card { flex: none; width: 100%; }
+  #collection-grid .product-name { font-size: 14px; margin: 10px 0 0; }
+  #collection-grid .product-desc-tiffany { display: none; }  /* keep cards tight */
+  #collection-grid .product-price { font-size: 13.5px; margin: 4px 0 0; }
+}
+
+/* B5 - home page polish on phones */
+@media (max-width: 480px) {
+  .studio-actions-tiffany { flex-direction: column; }
+  .studio-actions-tiffany .btn-directions-tiffany,
+  .studio-actions-tiffany .btn-book-appointment-tiffany {
+    width: 100%;
+    text-align: center;
+  }
+}
+@media (max-width: 768px) {
+  /* hero: keep the model's face in frame on narrow screens */
+  .hero-bg-img, .hero-slide-img { object-position: 70% 20%; }
+}

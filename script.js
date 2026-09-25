@@ -652,6 +652,11 @@ window.ABHUSHAN_PRODUCTS = [
           date: date, time: time, service: service, notes: notes
         }, email);
       }
+      /* PHASE 5 — cloud record so the appointment shows in the Admin Portal on ANY device */
+      if (window.AbhushanCart && window.AbhushanCart.cloudPost) {
+        window.AbhushanCart.cloudPost({ action: 'appointment', appointment: newBooking })
+          .catch(function () { /* email (above) remains the backup */ });
+      }
       
       // Show confirmation toast
       showToast(`Success! Booking ${bookingId} requested. We will contact you soon.`);

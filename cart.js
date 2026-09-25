@@ -8,7 +8,12 @@
     WHATSAPP_NUMBER: '919979787087', // digits only, no +
     CURRENCY: '₹',
     FREE_SHIP: 10000,
-    SHIP_FEE: 199
+    SHIP_FEE: 199,
+    /* PHASE 5 — cloud order storage (Google Sheets via Apps Script).
+       Divyaraj pastes the Web App URL + key here after STEP A0.
+       Until then everything works exactly as before (email + local record). */
+    CLOUD_ENDPOINT: 'PASTE_YOUR_WEB_APP_URL_HERE',
+    CLOUD_KEY: 'PASTE_YOUR_ADMIN_KEY_HERE'
   };
   var KEY = 'abhushan_cart_v1';
   var PRODUCTS = {
@@ -239,6 +244,53 @@
   }
   function addFromWishlist(name){ add(name, null); }
 
+  /* ---------- PHASE 5 — cloud sync (Google Sheets via Apps Script) ---------- */
+  var QUEUE_KEY = 'abhushan_order_queue_v1';
+
+  function cloudConfigured() {
+    return CONFIG.CLOUD_ENDPOINT.indexOf('https://script.google') === 0
+      && CONFIG.CLOUD_KEY && CONFIG.CLOUD_KEY.indexOf('PASTE_') !== 0;
+  }
+
+  /* text/plain content-type on purpose: a JSON content-type would trigger a
+     CORS preflight that Apps Script cannot answer. text/plain = "simple
+     request", no preflight, Apps Script parses e.postData.contents fine. */
+  function cloudPost(payload) {
+    if (!cloudConfigured()) return Promise.reject(new Error('cloud-not-configured'));
+    payload.key = CONFIG.CLOUD_KEY;
+    return fetch(CONFIG.CLOUD_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); });
+  }
+
+  function queuePush(payload) {
+    try {
+      var q = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+      q.push(payload);
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
+    } catch (e) {}
+  }
+
+  /* retry queued orders (offline at purchase time, or cloud was not
+     configured yet). Runs on every page load — fire and forget. */
+  function flushQueue() {
+    if (!cloudConfigured()) return;
+    var q;
+    try { q = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch (e) { q = []; }
+    if (!q.length) return;
+    var i = 0;
+    var saveRest = function () { try { localStorage.setItem(QUEUE_KEY, JSON.stringify(q.slice(i))); } catch (e) {} };
+    var step = function () {
+      if (i >= q.length) { try { localStorage.removeItem(QUEUE_KEY); } catch (e) {} return; }
+      cloudPost(q[i]).then(function (res) {
+        if (res && res.ok) { i++; step(); } else { saveRest(); }
+      }).catch(saveRest);
+    };
+    step();
+  }
+
   /* ---------- checkout ---------- */
   function esc(s){
     return String(s).replace(/[&<>"']/g, function(c){
@@ -409,6 +461,12 @@
       localStorage.setItem('abhushan_orders_v1', JSON.stringify(arr));
     } catch (e) {}
 
+    /* 1b) PHASE 5 — cloud record so the order shows in the Admin Portal
+       on ANY device. On failure it queues and retries on next visit. */
+    cloudPost({ action: 'order', order: order }).catch(function () {
+      queuePush({ action: 'order', order: order });
+    });
+
     /* 2) email the studio — Web3Forms via notify.js, now WITH full customer details */
     var emailPromise = (window.AbhushanNotify && window.AbhushanNotify.send)
       ? window.AbhushanNotify.send(
@@ -430,7 +488,7 @@
         )
       : Promise.resolve({ success: false });
 
-    /* 3) clear bag, close checkout, show confirmation */
+    /* 4) clear bag, close checkout, show confirmation */
     items = [];
     save();
     updateBadge();
@@ -501,8 +559,10 @@
 
   load();
   injectHeaderButton();
+  flushQueue(); // PHASE 5 — retry any orders queued while offline
   window.AbhushanCart = {
     add: add, addByName: addByName, addFromWishlist: addFromWishlist,
-    open: openDrawer, close: closeDrawer, count: count, subtotal: subtotal, inr: inr, CONFIG: CONFIG
+    open: openDrawer, close: closeDrawer, count: count, subtotal: subtotal, inr: inr, CONFIG: CONFIG,
+    cloudPost: cloudPost, cloudConfigured: cloudConfigured // PHASE 5 — reused by script.js
   };
 })();

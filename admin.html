@@ -815,6 +815,19 @@
     #orders-table select.order-status { padding: 4px 6px; font-size: 13px; }
     #orders-table .ord-items { font-size: 12.5px; line-height: 1.45; text-align: left; }
     #orders-table .ord-del { background: none; border: 1px solid #e3b7b7; color: #A33B2E; border-radius: 4px; cursor: pointer; padding: 4px 8px; font-size: 12px; }
+
+    /* PHASE 5 — cloud status chip */
+    .cloud-chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+    .cloud-chip.on  { background: #E7F4EA; color: #1E6B3A; border: 1px solid #BFE3CB; }
+    .cloud-chip.off { background: #FDECEA; color: #A33B2E; border: 1px solid #F0C9C2; }
+
+    /* PHASE 5 — mobile: scroll wide tables, 2-col stats */
+    .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-container table { min-width: 720px; }
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .stat-num { font-size: 26px; }
+    }
   </style>
 </head>
 <body>
@@ -939,9 +952,9 @@
 
     <div id="orders-section" style="display: none;">
       <div class="orders-banner">
-        Orders placed in THIS browser appear here automatically (localStorage). Orders placed on a
-        customer's device reach you by EMAIL (Web3Forms) — that email is the master record for those.
-        Every order email now contains the customer's name, phone, email, address and notes.
+        <strong id="cloud-status" class="cloud-chip off">Cloud checking…</strong><br />
+        Orders from EVERY customer device now appear here (Google Sheets cloud). Status changes and
+        deletes sync back to the sheet. Web3Forms email still arrives as a backup copy of each order.
       </div>
       <section class="stats-grid">
         <div class="stat-card total"><div class="stat-label">Total Orders</div><div class="stat-num" id="ostat-total">0</div></div>
@@ -978,7 +991,7 @@
           <tbody id="orders-body"></tbody>
         </table>
         <div id="orders-empty" class="empty-state" style="display:none;">
-          <p>No orders yet. Place a test order from the website in this browser, or wait for customer order emails.</p>
+          <p>No orders yet. Place a test order from ANY device (phone/laptop) — it will appear here within seconds via the cloud. Web3Forms emails continue as backup.</p>
         </div>
       </section>
     </div>
@@ -1098,7 +1111,6 @@
           const raw = localStorage.getItem('abhushan_appointments');
           if (raw) {
             appointments = JSON.parse(raw);
-            // Sort by date (descending order, newest first or by date/time order)
             appointments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
           } else {
             appointments = [];
@@ -1107,6 +1119,26 @@
           console.error('Error loading appointments:', err);
           appointments = [];
         }
+        /* PHASE 5 — merge cloud appointments (all devices), then re-render */
+        cloudFetch('appointments').then(cloudRows => {
+          const known = new Set(appointments.map(a => String(a.id)));
+          const fresh = cloudRows
+            .filter(r => r.id && !known.has(String(r.id)))
+            .map(r => ({
+              id: String(r.id),
+              created_at: r.created_at || '',
+              name: r.name || '', email: r.email || '', phone: String(r.phone || ''),
+              date: r.date || '', time: r.time || '', service: r.service || '',
+              notes: r.notes || '',
+              status: 'Pending',
+              source: 'cloud'
+            }));
+          if (fresh.length) {
+            appointments = appointments.concat(fresh)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            if (typeof renderDashboard === 'function') renderDashboard();
+          }
+        });
       }
 
       function saveAppointments() {
@@ -1476,6 +1508,81 @@
 
       /* ===== PHASE 4 — ORDERS TAB ===== */
       const ORDERS_KEY = 'abhushan_orders_v1';
+
+      /* ===== PHASE 5 — CLOUD ORDERS (Google Sheets) =====
+         Must match cart.js CONFIG.CLOUD_ENDPOINT / CLOUD_KEY.
+         Divyaraj pastes the real values in STEP A4-final. */
+      const CLOUD_ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE';
+      const CLOUD_KEY = 'PASTE_YOUR_ADMIN_KEY_HERE';
+      const CLOUD_READY = CLOUD_ENDPOINT.indexOf('https://script.google') === 0
+        && CLOUD_KEY.indexOf('PASTE_') !== 0;
+
+      /* POST helper — text/plain avoids the CORS preflight Apps Script can't answer */
+      function adminCloudPost(payload) {
+        if (!CLOUD_READY) return Promise.reject(new Error('cloud-not-configured'));
+        payload.key = CLOUD_KEY;
+        return fetch(CLOUD_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        }).then(r => r.json()).catch(() => ({}));
+      }
+
+      /* GET helper — action 'orders' | 'appointments' */
+      function cloudFetch(action) {
+        if (!CLOUD_READY) return Promise.resolve([]);
+        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY))
+          .then(r => r.json())
+          .then(j => (j && j.ok && Array.isArray(j[action])) ? j[action] : [])
+          .catch(() => []);
+      }
+
+      /* a sheet row → the order shape the portal already renders */
+      function normalizeCloudOrder(r) {
+        return {
+          id: String(r.id || ''),
+          at: r.placed_at || '',
+          status: r.status || 'new',
+          customer: {
+            name: r.name || '', phone: String(r.phone || ''), email: r.email || '',
+            address: r.address || '', city: r.city || '', pin: String(r.pin || ''),
+            notes: r.notes || ''
+          },
+          items: String(r.items || '').split(' | ').filter(Boolean)
+            .map(s => ({ name: s, size: null, price: null })),
+          subtotal: Number(r.subtotal) || 0,
+          shipping: Number(r.shipping) || 0,
+          total: Number(r.total) || 0,
+          page: r.page || '',
+          source: 'cloud'
+        };
+      }
+
+      /* merged view: cloud (all devices) + local (offline safety net), dedup by id */
+      let currentOrders = [];
+      function getMergedOrders() {
+        return cloudFetch('orders').then(cloudRows => {
+          const byId = {};
+          cloudRows.forEach(r => { if (r.id) byId[String(r.id)] = normalizeCloudOrder(r); });
+          getOrders().forEach(o => { if (!byId[String(o.id)]) byId[String(o.id)] = o; });
+          return Object.values(byId)
+            .sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+        });
+      }
+      function refreshOrders() {
+        return getMergedOrders().then(list => {
+          currentOrders = list;
+          try { saveOrders(list); } catch (e) {} /* keep local mirror fresh */
+          renderOrders();
+          const chip = document.getElementById('cloud-status');
+          if (chip) {
+            chip.textContent = CLOUD_READY
+              ? 'Cloud connected — ' + list.length + ' order(s) from all devices'
+              : 'Cloud NOT configured — finish STEP A0 (only this browser’s orders show)';
+            chip.className = 'cloud-chip ' + (CLOUD_READY ? 'on' : 'off');
+          }
+        });
+      }
       const ORDER_STATUSES = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
       const tabAppointments = document.getElementById('tab-appointments');
       const tabOrders = document.getElementById('tab-orders');
@@ -1500,7 +1607,7 @@
         return (items || []).map(i => i.name + (i.size ? ' (Size ' + i.size + ')' : ''));
       }
       function renderOrders() {
-        const all = getOrders();
+        const all = currentOrders.length ? currentOrders : getOrders();
         const q = (orderSearch.value || '').trim().toLowerCase();
         const st = orderStatusFilter.value;
         const list = all.filter(o => {
@@ -1545,23 +1652,33 @@
       ordersBody.addEventListener('change', e => {
         const sel = e.target.closest('select.order-status');
         if (!sel) return;
-        const list = getOrders();
+        const list = currentOrders.length ? currentOrders.slice() : getOrders();
         const o = list.find(x => x.id === sel.getAttribute('data-id'));
-        if (o) { o.status = sel.value; saveOrders(list); renderOrders(); }
+        if (o) {
+          o.status = sel.value;
+          currentOrders = list;
+          saveOrders(list);
+          renderOrders();
+          adminCloudPost({ action: 'status', id: o.id, status: sel.value }); // PHASE 5 — sync to sheet
+        }
       });
       ordersBody.addEventListener('click', e => {
         const btn = e.target.closest('.ord-del');
         if (!btn) return;
-        if (!window.confirm('Delete order ' + btn.getAttribute('data-id') + '? This cannot be undone.')) return;
-        saveOrders(getOrders().filter(x => x.id !== btn.getAttribute('data-id')));
+        if (!window.confirm('Delete order ' + btn.getAttribute('data-id') + '? This removes it from the cloud sheet and this browser. Cannot be undone.')) return;
+        const id = btn.getAttribute('data-id');
+        currentOrders = currentOrders.filter(x => x.id !== id);
+        saveOrders(currentOrders);
         renderOrders();
+        adminCloudPost({ action: 'delete', id: id }); // PHASE 5 — sync to sheet
       });
-      orderSearch.addEventListener('input', renderOrders);
-      orderStatusFilter.addEventListener('change', renderOrders);
-      document.getElementById('btn-orders-refresh').addEventListener('click', renderOrders);
+      orderSearch.addEventListener('input', renderOrders);        /* filters the already-loaded list */
+      orderStatusFilter.addEventListener('change', renderOrders); /* filters the already-loaded list */
+      document.getElementById('btn-orders-refresh').addEventListener('click', () => refreshOrders()); /* PHASE 5 — re-fetch cloud */
       document.getElementById('btn-orders-clear').addEventListener('click', () => {
-        if (!window.confirm('This will wipe the local orders database on this browser. Continue?')) return;
+        if (!window.confirm('This clears the LOCAL mirror on this browser only. Cloud records in the Google Sheet are NOT touched. Continue?')) return;
         saveOrders([]);
+        currentOrders = [];
         renderOrders();
       });
       document.getElementById('btn-orders-export').addEventListener('click', () => {
@@ -1588,7 +1705,7 @@
         tabAppointments.classList.toggle('active', !isOrders);
         ordersSection.style.display = isOrders ? 'block' : 'none';
         appointmentsSection.style.display = isOrders ? 'none' : 'block';
-        if (isOrders) renderOrders();
+        if (isOrders) refreshOrders(); // PHASE 5 — cloud fetch every time the tab opens
       }
       tabAppointments.addEventListener('click', () => showTab('appointments'));
       tabOrders.addEventListener('click', () => showTab('orders'));
