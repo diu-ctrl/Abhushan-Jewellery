@@ -1156,7 +1156,7 @@
 
 
 
-              <p class="emi-info-tiffany">or ₹750/month with EMI <span class="emi-info-icon-tiffany">â“˜</span></p>
+              <p class="emi-info-tiffany">or ₹750/month with EMI <span class="emi-info-icon-tiffany">ⓘ</span></p>
 
 
 
@@ -1373,9 +1373,12 @@
 
 
         <div class="size-selector-wrap-tiffany">
-          <span class="size-label-tiffany">Select Size</span>
+          <span class="size-label-tiffany">Select Size <span class="size-selected-badge">16 cm</span></span>
           <div class="size-options-tiffany">
-            <button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">16 cm</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">17 cm</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">18 cm</button><button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">19 cm</button>
+            <button type="button" class="size-option-btn-tiffany active" onclick="selectSize(this)">16 cm</button>
+            <button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">17 cm</button>
+            <button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">18 cm</button>
+            <button type="button" class="size-option-btn-tiffany" onclick="selectSize(this)">19 cm</button>
           </div>
         </div>
 
@@ -1441,7 +1444,7 @@
 
 
 
-            <p>âœ¦ Free shipping on India orders over ₹10,000. Delivered in 5-7 business days.</p>
+            <p>Free shipping on India orders over ₹10,000. Delivered in 5-7 business days.</p>
 
 
 
@@ -2634,21 +2637,14 @@
 
 
     function selectSize(btn) {
-
-
-
-      const options = btn.parentElement.querySelectorAll('.size-option-btn-tiffany');
-
-
-
+      const wrap = btn.closest('.size-selector-wrap-tiffany') || btn.parentElement;
+      const options = wrap.querySelectorAll('.size-option-btn-tiffany');
       options.forEach(o => o.classList.remove('active'));
-
-
-
       btn.classList.add('active');
-
-
-
+      const badge = wrap.querySelector('.size-selected-badge');
+      if (badge) {
+        badge.textContent = btn.textContent.trim();
+      }
     }
 
 
