@@ -685,7 +685,7 @@ window.ABHUSHAN_PRODUCTS = [
       if (enteredPassword === 'admin123' || enteredPassword === 'abhushan2026') {
         sessionStorage.setItem('abhushan_admin_authenticated', 'true');
         adminModal.classList.remove('active');
-        showToast('Authentication successful. Redirecting... ✦');
+        showToast('Authentication successful. Redirecting...');
         setTimeout(() => {
           window.location.href = 'admin.html';
         }, 800);
@@ -754,7 +754,7 @@ window.ABHUSHAN_PRODUCTS = [
   // Main Nav Links: real links navigate directly
 
   /* ============================================================
-     SMOOTH image placeholders → real images swap
+     SMOOTH image placeholders to real images swap
      (When you drop real images into the folder, the script below
       will auto-detect and swap them in. Map filenames here.)
      ============================================================ */
@@ -1177,7 +1177,7 @@ window.ABHUSHAN_PRODUCTS = [
     if (tryOnTrigger) {
       tryOnTrigger.click();
     } else {
-      showToast("Navigate to any product detail page to try it on! ✦");
+      showToast("Navigate to any product detail page to try it on!");
     }
   };
   /* ============================================================
@@ -2793,7 +2793,7 @@ window.ABHUSHAN_PRODUCTS = [
 
     const WISHLIST_CATALOG = PRODUCTS;
 
-    // Map product page filename → product data (for PDP pages)
+    // Map product page filename to product data (for PDP pages)
     const PDP_MAP = {
       'product-threadbare-ring.html': PRODUCTS[0],
       'product-hammered-hoop.html':   PRODUCTS[1],
@@ -3223,7 +3223,7 @@ window.ABHUSHAN_PRODUCTS = [
 
   })();
 
-  console.log('%c✦ ABHUSHAN · Ahmedabad, Gujarat, India ✦', 'color:#C08B5D;font-family:Georgia,serif;font-size:14px;');
+  console.log('%cABHUSHAN · Ahmedabad, Gujarat, India', 'color:#C08B5D;font-family:Georgia,serif;font-size:14px;');
 
   // Cleanup helper
   window.addEventListener('beforeunload', () => {

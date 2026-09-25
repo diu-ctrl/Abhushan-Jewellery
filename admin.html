@@ -1010,7 +1010,7 @@
           
           if (enteredPassword === 'admin123' || enteredPassword === 'abhushan2026') {
             sessionStorage.setItem('abhushan_admin_authenticated', 'true');
-            showToast('Authorization successful. Welcoming Admin... ✦');
+            showToast('Authorization successful. Welcoming Admin... ');
             setTimeout(() => {
               showDashboard();
             }, 500);
@@ -1391,7 +1391,7 @@
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          showToast('CSV export downloaded successfully! ✦');
+          showToast('CSV export downloaded successfully! ');
         });
       }
 

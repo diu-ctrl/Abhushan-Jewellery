@@ -7434,7 +7434,7 @@ textarea:focus-visible {
 .error-404-main {
   padding: 100px 24px 120px;
   background-color: var(--color-bg);
-  min-height: 80vh;
+  min-height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7558,6 +7558,57 @@ textarea:focus-visible {
 
 /* Mobile menu: guarantee readable contrast regardless of overlay state */
 .mobile-menu.open .mobile-nav-link { color: var(--color-text); opacity: 1; }
+/* ===== Phase 2 — normalization tokens (Prompt 6) ===== */
+:root {
+  --ab-container: 1200px;
+  --ab-section-y: clamp(56px, 7vw, 88px);
+  --ab-h1: clamp(2.25rem, 4.5vw, 3.4rem);
+  --ab-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --ab-h3: clamp(1.25rem, 2vw, 1.5rem);
+  --ab-body: 16.5px;
+}
+.section-tiffany, [class*="section"] { padding-top: var(--ab-section-y); padding-bottom: var(--ab-section-y); }
+h1 { font-size: var(--ab-h1); }
+h2 { font-size: var(--ab-h2); }
+h3 { font-size: var(--ab-h3); }
+body { font-size: var(--ab-body); }
 
+/* Phase 2 — white icons over dark hero (Prompt 6) */
+.site-header:not(.scrolled):not(.menu-open) .nav-action-btn-tiffany,
+.site-header:not(.scrolled):not(.menu-open) .nav-bag-btn,
+.site-header:not(.scrolled):not(.menu-open) .nav-icon-btn,
+.site-header:not(.scrolled):not(.menu-open) .nav-wishlist-btn,
+.site-header:not(.scrolled):not(.menu-open) .hamburger svg,
+.site-header:not(.scrolled):not(.menu-open) .hamburger span,
+.site-header:not(.scrolled):not(.menu-open) .nav-top-right svg,
+.site-header:not(.scrolled):not(.menu-open) .nav-top-left svg,
+.site-header:not(.scrolled):not(.menu-open) .site-header--over-hero svg,
+.mobile-nav-toggle svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+}
+.site-header:not(.scrolled):not(.menu-open) .hamburger span {
+  background-color: #FFFFFF !important;
+}
+.site-header:not(.scrolled):not(.menu-open) .bag-badge {
+  background: var(--color-gold);
+  color: #fff;
+}
+.site-header:not(.scrolled):not(.menu-open) svg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
 
-
+.site-header.menu-open .nav-action-btn-tiffany,
+.site-header.menu-open .nav-bag-btn,
+.site-header.menu-open .nav-icon-btn,
+.site-header.menu-open .nav-wishlist-btn,
+.site-header.menu-open .hamburger svg,
+.site-header.menu-open .hamburger span,
+.site-header.menu-open .nav-top-right svg,
+.site-header.menu-open .nav-top-left svg {
+  color: var(--color-text) !important;
+  stroke: var(--color-text) !important;
+}
+.site-header.menu-open .hamburger span {
+  background-color: var(--color-text) !important;
+}
