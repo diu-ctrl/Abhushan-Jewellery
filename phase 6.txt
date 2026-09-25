@@ -1,0 +1,555 @@
+# ABHUSHAN — Phase 6 Prompts (Antigravity)
+# Cloud Orders Activation + Mobile Fixes (Blur / Search / Chat)
+
+> **READ THIS FIRST — WHY ORDERS WERE NOT SHOWING (the honest diagnosis)**
+>
+> Phase 5 shipped the *code* for cloud orders (Google Sheets + Apps Script), but the
+> connection was never activated. Right now, in your live `cart.js` (lines 15–16) and
+> `admin.html` (~line 1517), these are still placeholders:
+>
+> ```js
+> CLOUD_ENDPOINT: 'PASTE_YOUR_WEB_APP_URL_HERE',
+> CLOUD_KEY: 'PASTE_YOUR_ADMIN_KEY_HERE'
+> ```
+>
+> Because the URL is a placeholder, the site never sends any order to the cloud
+> (`cloudConfigured()` returns false and the POST is skipped silently). That is why:
+> - Web3Forms **emails always arrived** (email is independent of the cloud), but
+> - the Admin Portal only ever read `localStorage` **of the device it is opened on** —
+>   mobile admin showed mobile orders, desktop admin showed desktop orders. Exactly
+>   what you observed.
+>
+> The Google-side setup (creating the Sheet + Apps Script) can only be done by **you,
+> Divyaraj** (Antigravity has no access to your Google account). It takes ~5 minutes.
+> Phase 6 also adds a **diagnostic status chip + "Sync now" button** to the Admin
+> Portal so the dashboard can never again fail silently — it will always tell you
+> exactly what is wrong ("not configured" / "network error" / "connected, N orders").
+>
+> Mobile fixes in this phase (all reproduced and confirmed on the live site):
+> 1. **Blurred screen after closing the menu** — the dark blur overlay is never removed
+>    (its `.active` class stays forever, `backdrop-filter: blur(4px)` + `pointer-events: all`),
+>    so the page stays blurred/frozen until reload. One missing line in `closeMobileMenu()`.
+> 2. **Search input text too big on phones** — placeholder renders at 24px on a 393px screen.
+> 3. **Chat button "not working" on mobile** — the gold chat button was coded to appear
+>    only *after scrolling past the full-screen hero* (852px on phones, and the collection
+>    page has a full-screen hero too), and it sits *below* the newsletter/VTO overlays.
+>    We make it always visible, always on top, always tappable.
+
+---
+
+# PART 0 — DIVYARAJ ONLY (do this BEFORE sending the file to Antigravity)
+
+## STEP 0.1 — Create the Google Sheet
+1. Go to https://sheets.google.com → **Blank spreadsheet**.
+2. Name it: `Abhushan Orders Cloud`.
+
+## STEP 0.2 — Open Apps Script and paste the backend code
+1. In the Sheet: **Extensions → Apps Script**.
+2. Delete everything in the default `Code.gs` and paste ALL of this:
+
+```javascript
+/*************************************************************
+ * ABHUSHAN — Orders & Appointments cloud store (Google Sheets)
+ * Deployment: Web app | Execute as: Me | Who has access: Anyone
+ * API (already wired in the website code):
+ *   GET  ?action=orders&key=KEY        -> {ok, orders:[rows]}
+ *   GET  ?action=appointments&key=KEY  -> {ok, appointments:[rows]}
+ *   POST JSON {key, action:'order', order:{...}}
+ *   POST JSON {key, action:'appointment', appointment:{...}}
+ *************************************************************/
+var ADMIN_KEY = 'AbhushanStudio_2026'; // must match cart.js + admin.html
+
+var ORDER_HEADERS = ['id','placed_at','status','name','phone','email',
+                     'address','city','pin','notes','items',
+                     'subtotal','shipping','total','page'];
+var APPT_HEADERS  = ['id','created_at','name','email','phone',
+                     'date','time','service','notes','status'];
+
+function ensureSheet_(name, headers) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    sh.appendRow(headers);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function readRows_(name, headers) {
+  var sh = ensureSheet_(name, headers);
+  var values = sh.getDataRange().getValues();
+  if (values.length < 2) return [];
+  var out = [];
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0]) === '') continue;
+    var o = {};
+    for (var c = 0; c < headers.length; c++) o[headers[c]] = values[i][c];
+    out.push(o);
+  }
+  return out;
+}
+
+function doGet(e) {
+  var p = (e && e.parameter) || {};
+  if (String(p.key || '') !== ADMIN_KEY) return json_({ok:false, error:'bad-key'});
+  if (p.action === 'orders')       return json_({ok:true, orders:       readRows_('Orders', ORDER_HEADERS)});
+  if (p.action === 'appointments') return json_({ok:true, appointments: readRows_('Appointments', APPT_HEADERS)});
+  return json_({ok:false, error:'unknown-action'});
+}
+
+function doPost(e) {
+  var body = {};
+  try { body = JSON.parse(e.postData.contents); }
+  catch (err) { return json_({ok:false, error:'bad-json'}); }
+  if (String(body.key || '') !== ADMIN_KEY) return json_({ok:false, error:'bad-key'});
+
+  if (body.action === 'order' && body.order) {
+    var o = body.order, c = o.customer || {};
+    var sh = ensureSheet_('Orders', ORDER_HEADERS);
+    sh.appendRow([
+      String(o.id || ''), "'" + String(o.at || new Date().toISOString()),
+      String(o.status || 'new'),
+      String(c.name || ''), c.phone ? "'" + String(c.phone) : '', String(c.email || ''),
+      String(c.address || ''), String(c.city || ''), c.pin ? "'" + String(c.pin) : '',
+      String(c.notes || ''),
+      itemsText_(o.items),
+      Number(o.subtotal) || 0, Number(o.shipping) || 0, Number(o.total) || 0,
+      String(o.page || '')
+    ]);
+    return json_({ok:true, saved:'order', id:String(o.id || '')});
+  }
+
+  if (body.action === 'appointment' && body.appointment) {
+    var a = body.appointment;
+    var sh2 = ensureSheet_('Appointments', APPT_HEADERS);
+    sh2.appendRow([
+      String(a.id || ''), "'" + String(a.created_at || new Date().toISOString()),
+      String(a.name || ''), String(a.email || ''),
+      a.phone ? "'" + String(a.phone) : '',
+      String(a.date || ''), String(a.time || ''), String(a.service || ''),
+      String(a.notes || ''), String(a.status || 'Pending')
+    ]);
+    return json_({ok:true, saved:'appointment', id:String(a.id || '')});
+  }
+
+  return json_({ok:false, error:'unknown-action'});
+}
+
+function itemsText_(items) {
+  var arr = items || [], parts = [];
+  for (var i = 0; i < arr.length; i++) {
+    var s = String(arr[i].name || '');
+    if (arr[i].size)  s += ' (Size ' + arr[i].size + ')';
+    if (arr[i].price) s += ' \u2014 \u20B9' + arr[i].price;
+    parts.push(s);
+  }
+  return parts.join(' | ');
+}
+
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+                       .setMimeType(ContentService.MimeType.JSON);
+}
+```
+
+3. Press **Ctrl+S** to save. (The leading `'` trick keeps phone numbers and ISO
+   timestamps as readable text in the Sheet instead of `4.98E+11` scientific format.)
+
+## STEP 0.3 — Deploy the Web App (exact clicks)
+1. Top-right blue button: **Deploy → New deployment**.
+2. Click the **⚙ gear icon → Web app**.
+3. Description: `orders api`
+4. **Execute as: Me** (your account)
+5. **Who has access: Anyone**  ← critical, do NOT choose "Anyone with Google account"
+6. Click **Deploy**.
+7. Google asks for authorization: **Authorize access → choose your account →
+   Advanced → Go to … (unsafe) → Allow**. (This is your own script; the warning is normal.)
+
+## STEP 0.4 — Copy your Web App URL
+- After deploy, a popup shows **Web app: https://script.google.com/macros/s/AKfy…/exec**
+- Copy that URL. It must end in **/exec** (not /dev).
+
+## STEP 0.5 — Test the backend right now (30 seconds)
+Open a **new incognito/private browser tab** and visit (replace KEY if you changed it):
+
+```
+https://script.google.com/macros/s/YOUR_URL_ID/exec?action=orders&key=AbhushanStudio_2026
+```
+
+You must see: `{"ok":true,"orders":[]}` — if you see this, the backend is LIVE.
+If you see a Google login/permission page → redo STEP 0.3 item 5 ("Anyone").
+
+## STEP 0.6 — Fill this box (Antigravity reads it)
+```
+MY_WEB_APP_URL = PASTE_THE_URL_FROM_STEP_0.4_HERE
+MY_ADMIN_KEY   = AbhushanStudio_2026
+```
+
+> ⚠️ **ANTIGRAVITY**: if `MY_WEB_APP_URL` above still says `PASTE_THE_URL_FROM_STEP_0.4_HERE`,
+> STOP and tell the user to complete STEP 0 first. Do not invent a URL. Do not commit
+> placeholder values.
+
+Everything below is for **ANTIGRAVITY** to execute.
+
+---
+
+# PROMPT FOR ANTIGRAVITY — PHASE 6
+
+## Goal
+Activate the Phase 5 cloud-order pipeline with the real Web App URL, upgrade the Admin
+Portal with truthful cloud diagnostics + manual sync, and fix three mobile bugs
+(blur overlay stuck after menu close; oversized search placeholder; chat button
+availability/z-index). All orders placed on ANY customer device must appear in the
+Admin Portal on ANY device the owner uses.
+
+## Strict scope — you may ONLY edit these files
+- `cart.js` (2 config lines)
+- `admin.html` (config constants, cloud diagnostics JS, sync button markup + CSS)
+- `script.js` (closeMobileMenu overlay fix; chat visibility fix)
+- `styles.css` (append ONE new block at the very end — do not modify existing rules)
+
+Do NOT touch `notify.js`, `collection.html`, `index.html`, product pages, or anything else.
+Do NOT push to GitHub. Commit only.
+
+---
+
+## STEP 1 — `cart.js`: paste the real cloud config
+
+Find (lines 15–16):
+```js
+    CLOUD_ENDPOINT: 'PASTE_YOUR_WEB_APP_URL_HERE',
+    CLOUD_KEY: 'PASTE_YOUR_ADMIN_KEY_HERE'
+```
+
+Replace with (use the exact values from the `MY_WEB_APP_URL` / `MY_ADMIN_KEY` box above):
+```js
+    CLOUD_ENDPOINT: 'MY_WEB_APP_URL_VALUE',
+    CLOUD_KEY: 'MY_ADMIN_KEY_VALUE'
+```
+
+(Antigravity: replace `MY_WEB_APP_URL_VALUE` with the real `https://script.google.com/macros/s/…/exec`
+URL and `MY_ADMIN_KEY_VALUE` with the real key — same values in STEP 2.)
+
+---
+
+## STEP 2 — `admin.html`: real config + diagnostics + "Sync now" + auto-refresh
+
+### 2a. Constants (~line 1517)
+Find:
+```js
+      const CLOUD_ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE';
+      const CLOUD_KEY = 'PASTE_YOUR_ADMIN_KEY_HERE';
+```
+Replace with the SAME real values used in STEP 1:
+```js
+      const CLOUD_ENDPOINT = 'MY_WEB_APP_URL_VALUE';
+      const CLOUD_KEY = 'MY_ADMIN_KEY_VALUE';
+```
+
+### 2b. Make cloud failures VISIBLE instead of silent
+Find the current `cloudFetch` function:
+```js
+      /* GET helper — action 'orders' | 'appointments' */
+      function cloudFetch(action) {
+        if (!CLOUD_READY) return Promise.resolve([]);
+        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY))
+          .then(r => r.json())
+          .then(j => (j && j.ok && Array.isArray(j[action])) ? j[action] : [])
+          .catch(() => []);
+      }
+```
+Replace with:
+```js
+      /* GET helper — action 'orders' | 'appointments'. PHASE 6: errors are captured
+         and shown on the status chip so the dashboard can never fail silently. */
+      let cloudLastError = '';
+      function cloudFetch(action) {
+        cloudLastError = '';
+        if (!CLOUD_READY) { cloudLastError = 'not-configured'; return Promise.resolve([]); }
+        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY), { cache: 'no-store' })
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(j => (j && j.ok && Array.isArray(j[action])) ? j[action] : [])
+          .catch(err => {
+            cloudLastError = String((err && err.message) || err);
+            return [];
+          });
+      }
+```
+
+### 2c. Status chip tells the truth (+ last-sync time)
+Find the current `refreshOrders` function:
+```js
+      function refreshOrders() {
+        return getMergedOrders().then(list => {
+          currentOrders = list;
+          try { saveOrders(list); } catch (e) {} /* keep local mirror fresh */
+          renderOrders();
+          const chip = document.getElementById('cloud-status');
+          if (chip) {
+            chip.textContent = CLOUD_READY
+              ? 'Cloud connected — ' + list.length + ' order(s) from all devices'
+              : 'Cloud NOT configured — finish STEP A0 (only this browser’s orders show)';
+            chip.className = 'cloud-chip ' + (CLOUD_READY ? 'on' : 'off');
+          }
+        });
+      }
+```
+Replace with:
+```js
+      function refreshOrders() {
+        return getMergedOrders().then(list => {
+          currentOrders = list;
+          try { saveOrders(list); } catch (e) {} /* keep local mirror fresh */
+          renderOrders();
+          const chip = document.getElementById('cloud-status');
+          if (chip) {
+            if (!CLOUD_READY) {
+              chip.textContent = 'Cloud NOT connected — finish Phase 6 STEP 0 (only this device\u2019s orders show)';
+              chip.className = 'cloud-chip off';
+            } else if (cloudLastError) {
+              chip.textContent = 'Cloud error: ' + cloudLastError + ' \u2014 showing cached orders';
+              chip.className = 'cloud-chip off';
+            } else {
+              const cloudCount = list.filter(o => o.source === 'cloud').length;
+              chip.textContent = 'Cloud connected \u2014 ' + list.length + ' order(s), ' + cloudCount + ' from Sheets';
+              chip.className = 'cloud-chip on';
+            }
+          }
+          const t = document.getElementById('cloud-last-sync');
+          if (t) t.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
+        });
+      }
+
+      /* PHASE 6 — manual re-sync button + auto-refresh every 60s while visible */
+      const syncBtn = document.getElementById('cloud-sync-btn');
+      if (syncBtn) {
+        syncBtn.addEventListener('click', function () {
+          syncBtn.disabled = true; syncBtn.textContent = 'Syncing\u2026';
+          refreshOrders().then(function () {
+            syncBtn.disabled = false; syncBtn.textContent = '\u27F3 Sync now';
+          });
+        });
+      }
+      setInterval(function () {
+        const sec = document.getElementById('orders-section');
+        if (sec && sec.style.display !== 'none') refreshOrders();
+      }, 60000);
+```
+
+### 2d. Sync button markup
+Find (line ~955):
+```html
+        <strong id="cloud-status" class="cloud-chip off">Cloud checking…</strong><br />
+```
+Replace with:
+```html
+        <strong id="cloud-status" class="cloud-chip off">Cloud checking…</strong>
+        <button type="button" id="cloud-sync-btn" class="cloud-sync-btn">&#10227; Sync now</button>
+        <span id="cloud-last-sync" class="cloud-last-sync"></span><br />
+```
+
+### 2e. Button styles — inside the admin `<style>` block, directly BELOW the existing
+`.cloud-chip.off` rule (line ~822), add:
+```css
+    /* PHASE 6 — sync button + last-sync stamp */
+    .cloud-sync-btn { margin-left: 10px; padding: 4px 12px; border-radius: 999px;
+      border: 1px solid #C9A96E; background: #FDF6EC; color: #7A5B2E;
+      font-weight: 600; font-size: 12.5px; cursor: pointer; }
+    .cloud-sync-btn:disabled { opacity: .6; cursor: wait; }
+    .cloud-last-sync { margin-left: 10px; font-size: 12px; color: #8A8A8A; }
+```
+
+---
+
+## STEP 3 — `script.js`: FIX the blurred screen after closing the menu
+
+Root cause: `closeMobileMenu()` never removes the `.active` class from `#overlay-bg`
+(`position:fixed; inset:0; background:rgba(26,23,20,.6); backdrop-filter:blur(4px);
+pointer-events:all`). Once the menu is closed, that overlay stays on screen forever —
+the page looks blurred/dark and every tap lands on the overlay.
+
+Find (lines 388–399):
+```js
+  function closeMobileMenu() {
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    mobileMenu.classList.remove('open');
+    header.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      if (!mobileMenu.classList.contains('open')) {
+        // leave display as flex, CSS handles visibility
+      }
+    }, 300);
+  }
+```
+
+Replace with:
+```js
+  function closeMobileMenu() {
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    mobileMenu.classList.remove('open');
+    header.classList.remove('menu-open');
+    overlayBg.classList.remove('active'); /* PHASE 6 FIX — clear dark blur overlay */
+    document.body.style.overflow = '';
+    setTimeout(() => {
+      if (!mobileMenu.classList.contains('open')) {
+        mobileMenu.style.display = ''; /* PHASE 6 FIX — fully remove from layout */
+      }
+    }, 300);
+  }
+```
+
+This single function is called by EVERY close path (hamburger, backdrop click,
+Escape key, nav-link taps) — so one fix covers all of them.
+
+---
+
+## STEP 4 — `script.js`: chat button always available (the real "chat not working" fix)
+
+Root cause: the gold chat button was gated behind scrolling past the full-screen hero
+(852px on phones — homepage AND collection page both have one), so on the first screen
+it is invisible (`opacity:0`) and untappable (`pointer-events:none`). Its z-index also
+sat below the newsletter (10000) and VTO (10001) overlays.
+
+### 4a. Remove the scroll gating
+In `onScroll()`, find (near lines 360–367):
+```js
+    if (chatContainer) {
+      if (window.scrollY >= hero.offsetHeight - 100) {
+        chatContainer.classList.add('chat-visible');
+      } else {
+        chatContainer.classList.remove('chat-visible');
+      }
+    }
+  }
+```
+Replace with:
+```js
+    /* PHASE 6 FIX — chat button is ALWAYS available; no hero-scroll gating */
+    if (chatContainer) {
+      chatContainer.classList.add('chat-visible');
+    }
+  }
+```
+
+### 4b. Show it immediately when injected
+In `injectChatWidget()`, find:
+```js
+    document.body.appendChild(container);
+```
+Replace with:
+```js
+    document.body.appendChild(container);
+    container.classList.add('chat-visible'); /* PHASE 6 FIX — visible immediately */
+```
+
+---
+
+## STEP 5 — `styles.css`: append ONE new block at the very END of the file
+
+Append (do not modify anything above it):
+```css
+/* ============================================================
+   PHASE 6 — MOBILE FIXES (search size · chat availability)
+   ============================================================ */
+
+/* 1) Search overlay — readable placeholder/input size on phones.
+      16px also stops iOS Safari from auto-zooming when the field is focused. */
+@media (max-width: 640px) {
+  .search-input-field-tiffany,
+  .search-input-field-tiffany:focus {
+    font-size: 16px;
+  }
+  .search-input-field-tiffany::placeholder {
+    font-size: 16px;
+  }
+  .search-overlay-inner-tiffany {
+    padding: 20px 18px 48px;
+  }
+  .search-input-icon-tiffany svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* 2) Chat widget — always on top of every overlay (newsletter 10000 / VTO 10001),
+      always tappable, never wider than the screen */
+#chat-widget-container { z-index: 10050; }
+#chat-widget-container .chat-widget-trigger {
+  z-index: 10051;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+#chat-widget-container .chat-widget-panel {
+  z-index: 10052;
+  max-width: 100vw;
+}
+```
+
+---
+
+## PowerShell 5.1 validation — run ALL of it, in the repo folder
+
+```powershell
+$ErrorActionPreference = "Stop"
+Set-Location "C:\Users\levol\Desktop\OLD LAPTOP ARCHIEVE\Abhushan"
+
+# 1) JS syntax must pass (no output = pass)
+node --check .\script.js
+node --check .\cart.js
+
+# 2) No placeholders left anywhere (MUST print nothing)
+Select-String -Path .\cart.js,.\admin.html -Pattern "PASTE_YOUR"
+
+# 3) Real Apps Script URL present in BOTH files (MUST print 2)
+(Select-String -Path .\cart.js,.\admin.html -Pattern "https://script\.google\.com/macros/s/" | Measure-Object).Count
+
+# 4) Blur overlay fix present (MUST print 1)
+(Select-String -Path .\script.js -Pattern "overlayBg\.classList\.remove\('active'\)" | Measure-Object).Count
+
+# 5) Chat fixes present (MUST print 2)
+(Select-String -Path .\script.js -Pattern "PHASE 6 FIX" | Measure-Object).Count
+
+# 6) Mobile CSS block present (MUST print 1)
+(Select-String -Path .\styles.css -Pattern "PHASE 6 — MOBILE FIXES" | Measure-Object).Count
+
+# 7) Commit (NEVER push — Divyaraj pushes via GitHub Desktop)
+& "C:\Users\levol\AppData\Local\GitHubDesktop\app-3.6.4\resources\app\git\cmd\git.exe" add -A
+& "C:\Users\levol\AppData\Local\GitHubDesktop\app-3.6.4\resources\app\git\cmd\git.exe" commit -m "Phase 6: activate cloud orders + admin diagnostics + mobile blur/chat/search fixes"
+```
+
+If check 2 prints anything, a placeholder was missed — fix before committing.
+If check 3 prints anything other than 2, one file still has no URL.
+
+---
+
+## Visual checklist (verify after Vercel deploy, then delete nothing)
+
+**Phone (real device or DevTools iPhone 393px):**
+1. Open site → tap hamburger → close it → screen is SHARP and BRIGHT again; every tap works. ✔
+2. Gold chat button visible immediately on Home, Collection, Product pages (top of page included). ✔
+3. Tap chat button → panel slides up from bottom → "WhatsApp the Studio" opens WhatsApp. ✔
+4. Tap search icon → placeholder "Search for rings, necklaces, collections…" is small (16px), fits on one line. ✔
+5. Add a product to bag → Checkout → fill details → Order → confirmation appears. ✔
+
+**Owner side (cross-device proof — the actual goal):**
+6. Open the Google Sheet → an `Orders` tab now exists with the test order row. ✔
+7. On DESKTOP open `admin.html` → login → Orders tab → chip is GREEN: "Cloud connected — N order(s), N from Sheets". ✔
+8. Place an order from the PHONE → back on desktop admin → click "⟳ Sync now" (or wait 60s) → phone order appears. ✔
+9. Place an order from DESKTOP → open admin on the PHONE → order appears after sync. ✔
+10. Book a studio appointment from any device → appears in Appointments tab after sync. ✔
+11. If the chip shows "Cloud error: …" — open the STEP 0.5 test URL in incognito and compare; the chip now names the exact problem. ✔
+
+## Antigravity Final Report format
+```
+PHASE 6 REPORT
+- Files changed: <list>
+- CLOUD_ENDPOINT set to: <first 40 chars of URL>…
+- Validation: 1)… 2)… 3)=<count> 4)=<count> 5)=<count> 6)=<count>
+- Commit hash: <hash>
+- Anything skipped: <none or why>
+```

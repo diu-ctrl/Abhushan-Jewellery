@@ -821,6 +821,13 @@
     .cloud-chip.on  { background: #E7F4EA; color: #1E6B3A; border: 1px solid #BFE3CB; }
     .cloud-chip.off { background: #FDECEA; color: #A33B2E; border: 1px solid #F0C9C2; }
 
+    /* PHASE 6 — sync button + last-sync stamp */
+    .cloud-sync-btn { margin-left: 10px; padding: 4px 12px; border-radius: 999px;
+      border: 1px solid #C9A96E; background: #FDF6EC; color: #7A5B2E;
+      font-weight: 600; font-size: 12.5px; cursor: pointer; }
+    .cloud-sync-btn:disabled { opacity: .6; cursor: wait; }
+    .cloud-last-sync { margin-left: 10px; font-size: 12px; color: #8A8A8A; }
+
     /* PHASE 5 — mobile: scroll wide tables, 2-col stats */
     .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .table-container table { min-width: 720px; }
@@ -952,7 +959,9 @@
 
     <div id="orders-section" style="display: none;">
       <div class="orders-banner">
-        <strong id="cloud-status" class="cloud-chip off">Cloud checking…</strong><br />
+        <strong id="cloud-status" class="cloud-chip off">Cloud checking…</strong>
+        <button type="button" id="cloud-sync-btn" class="cloud-sync-btn">&#10227; Sync now</button>
+        <span id="cloud-last-sync" class="cloud-last-sync"></span><br />
         Orders from EVERY customer device now appear here (Google Sheets cloud). Status changes and
         deletes sync back to the sheet. Web3Forms email still arrives as a backup copy of each order.
       </div>
@@ -1512,8 +1521,8 @@
       /* ===== PHASE 5 — CLOUD ORDERS (Google Sheets) =====
          Must match cart.js CONFIG.CLOUD_ENDPOINT / CLOUD_KEY.
          Divyaraj pastes the real values in STEP A4-final. */
-      const CLOUD_ENDPOINT = 'PASTE_YOUR_WEB_APP_URL_HERE';
-      const CLOUD_KEY = 'PASTE_YOUR_ADMIN_KEY_HERE';
+      const CLOUD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwVRr6rSiNdVNXSGa1lgxXxqiMLBkDz_h9N0sVpSOJygLw-zf85udMTKNr7aaCY4Wi7/exec';
+      const CLOUD_KEY = 'AbhushanStudio_2026';
       const CLOUD_READY = CLOUD_ENDPOINT.indexOf('https://script.google') === 0
         && CLOUD_KEY.indexOf('PASTE_') !== 0;
 
@@ -1528,13 +1537,19 @@
         }).then(r => r.json()).catch(() => ({}));
       }
 
-      /* GET helper — action 'orders' | 'appointments' */
+      /* GET helper — action 'orders' | 'appointments'. PHASE 6: errors are captured
+         and shown on the status chip so the dashboard can never fail silently. */
+      let cloudLastError = '';
       function cloudFetch(action) {
-        if (!CLOUD_READY) return Promise.resolve([]);
-        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY))
-          .then(r => r.json())
+        cloudLastError = '';
+        if (!CLOUD_READY) { cloudLastError = 'not-configured'; return Promise.resolve([]); }
+        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY), { cache: 'no-store' })
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
           .then(j => (j && j.ok && Array.isArray(j[action])) ? j[action] : [])
-          .catch(() => []);
+          .catch(err => {
+            cloudLastError = String((err && err.message) || err);
+            return [];
+          });
       }
 
       /* a sheet row → the order shape the portal already renders */
@@ -1576,13 +1591,37 @@
           renderOrders();
           const chip = document.getElementById('cloud-status');
           if (chip) {
-            chip.textContent = CLOUD_READY
-              ? 'Cloud connected — ' + list.length + ' order(s) from all devices'
-              : 'Cloud NOT configured — finish STEP A0 (only this browser’s orders show)';
-            chip.className = 'cloud-chip ' + (CLOUD_READY ? 'on' : 'off');
+            if (!CLOUD_READY) {
+              chip.textContent = 'Cloud NOT connected — finish Phase 6 STEP 0 (only this device\u2019s orders show)';
+              chip.className = 'cloud-chip off';
+            } else if (cloudLastError) {
+              chip.textContent = 'Cloud error: ' + cloudLastError + ' \u2014 showing cached orders';
+              chip.className = 'cloud-chip off';
+            } else {
+              const cloudCount = list.filter(o => o.source === 'cloud').length;
+              chip.textContent = 'Cloud connected \u2014 ' + list.length + ' order(s), ' + cloudCount + ' from Sheets';
+              chip.className = 'cloud-chip on';
+            }
           }
+          const t = document.getElementById('cloud-last-sync');
+          if (t) t.textContent = 'Last sync: ' + new Date().toLocaleTimeString();
         });
       }
+
+      /* PHASE 6 — manual re-sync button + auto-refresh every 60s while visible */
+      const syncBtn = document.getElementById('cloud-sync-btn');
+      if (syncBtn) {
+        syncBtn.addEventListener('click', function () {
+          syncBtn.disabled = true; syncBtn.textContent = 'Syncing\u2026';
+          refreshOrders().then(function () {
+            syncBtn.disabled = false; syncBtn.textContent = '\u27F3 Sync now';
+          });
+        });
+      }
+      setInterval(function () {
+        const sec = document.getElementById('orders-section');
+        if (sec && sec.style.display !== 'none') refreshOrders();
+      }, 60000);
       const ORDER_STATUSES = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
       const tabAppointments = document.getElementById('tab-appointments');
       const tabOrders = document.getElementById('tab-orders');

@@ -357,12 +357,9 @@ window.ABHUSHAN_PRODUCTS = [
       if (header) header.classList.remove('scrolled');
     }
     
+    /* PHASE 6 FIX — chat button is ALWAYS available; no hero-scroll gating */
     if (chatContainer) {
-      if (window.scrollY >= hero.offsetHeight - 100) {
-        chatContainer.classList.add('chat-visible');
-      } else {
-        chatContainer.classList.remove('chat-visible');
-      }
+      chatContainer.classList.add('chat-visible');
     }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -390,10 +387,11 @@ window.ABHUSHAN_PRODUCTS = [
     hamburger.setAttribute('aria-expanded', 'false');
     mobileMenu.classList.remove('open');
     header.classList.remove('menu-open');
+    overlayBg.classList.remove('active'); /* PHASE 6 FIX — clear dark blur overlay */
     document.body.style.overflow = '';
     setTimeout(() => {
       if (!mobileMenu.classList.contains('open')) {
-        // leave display as flex, CSS handles visibility
+        mobileMenu.style.display = ''; /* PHASE 6 FIX — fully remove from layout */
       }
     }, 300);
   }
@@ -931,6 +929,7 @@ window.ABHUSHAN_PRODUCTS = [
     `;
 
     document.body.appendChild(container);
+    container.classList.add('chat-visible'); /* PHASE 6 FIX — visible immediately */
 
     var waBtn = document.getElementById('chat-wa-btn');
     if (waBtn && window.AbhushanNotify) {

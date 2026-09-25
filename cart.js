@@ -12,8 +12,8 @@
     /* PHASE 5 — cloud order storage (Google Sheets via Apps Script).
        Divyaraj pastes the Web App URL + key here after STEP A0.
        Until then everything works exactly as before (email + local record). */
-    CLOUD_ENDPOINT: 'PASTE_YOUR_WEB_APP_URL_HERE',
-    CLOUD_KEY: 'PASTE_YOUR_ADMIN_KEY_HERE'
+    CLOUD_ENDPOINT: 'https://script.google.com/macros/s/AKfycbwVRr6rSiNdVNXSGa1lgxXxqiMLBkDz_h9N0sVpSOJygLw-zf85udMTKNr7aaCY4Wi7/exec',
+    CLOUD_KEY: 'AbhushanStudio_2026'
   };
   var KEY = 'abhushan_cart_v1';
   var PRODUCTS = {
