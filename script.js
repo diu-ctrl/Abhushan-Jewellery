@@ -1,3 +1,11 @@
+window.ABHUSHAN_PRODUCTS = [
+  { slug: 'threadbare-ring', name: 'Threadbare Ring', price: 3999, desc: 'A whisper of gold, 18k, barely there, impossible to forget.', img: 'images/_Product Cards/prod_ring1.png', tags: ['rings'], sizes: ['4', '5', '6', '7', '8'], isBestseller: true },
+  { slug: 'hammered-hoop', name: 'Hammered Hoop Earring', price: 5299, desc: 'Hand-hammered texture catches light differently every hour of the day.', img: 'images/_Product Cards/prod_earring1.png', tags: ['earrings'], sizes: [], isBestseller: true },
+  { slug: 'greco-lariat', name: 'Greco Lariat', price: 32999, desc: 'Inspired by the stepwells of Gujarat. Adjustable drop. 22k gold.', img: 'images/_Product Cards/prod_necklace1.png', tags: ['necklaces'], sizes: [], isBestseller: true },
+  { slug: 'sweet-nothing', name: 'Sweet Nothing Bracelet', price: 11299, desc: 'A single delicate chain that says everything without speaking.', img: 'images/_Product Cards/prod_bracelet1.png', tags: ['bracelets', 'gifts'], sizes: ['15cm', '16cm', '17cm', '18cm'], isBestseller: true },
+  { slug: 'tomboy-ring', name: 'Tomboy Ring', price: 21999, desc: 'Bold width, soft edges. For people who don\'t do dainty.', img: 'images/_Product Cards/prod_ring2.png', tags: ['rings'], sizes: ['5', '6', '7', '8', '9', '10'] }
+];
+
 /* =============================================================
    ABHUSHAN – Fine Gold Jewellery · Ahmedabad, Gujarat, India
    Main JavaScript
@@ -422,14 +430,7 @@
 
 
 
-  // Main Nav Links Toast
-  document.querySelectorAll('.site-header .nav-link:not(#account-link), .mobile-nav-link').forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      showToast(`Exploring the ${link.textContent} collection — coming soon! ✦`);
-      closeMobileMenu();
-    });
-  });
+  // Main Nav Links: real links navigate directly
 
   /* ============================================================
      SMOOTH image placeholders → real images swap
@@ -478,45 +479,7 @@
     });
   }
 
-  /* ============================================================
-     COMING SOON TOAST NOTIFICATION
-     ============================================================ */
-  function showComingSoonToast(pageName) {
-    let toast = document.getElementById('luxury-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'luxury-toast';
-      toast.className = 'luxury-toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = `The "${pageName}" page is coming soon.`;
-    toast.classList.add('show');
-    
-    if (toast.timeoutId) {
-      clearTimeout(toast.timeoutId);
-    }
-    
-    toast.timeoutId = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3000);
-  }
-
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('[data-coming-soon]');
-    if (link) {
-      e.preventDefault();
-      let pageName = link.getAttribute('data-coming-soon-title') || link.textContent.trim();
-      if (!pageName || pageName === 'meow!') {
-        const img = link.querySelector('img');
-        if (img && img.alt) {
-          pageName = img.alt;
-        } else {
-          pageName = 'collection';
-        }
-      }
-      showComingSoonToast(pageName);
-    }
-  });
+  /* Navigation toast removed — all navigation is real */
 
   /* ============================================================
      SMOOTH SCROLL FOR BOOKING SECTION LINKS
@@ -2001,7 +1964,7 @@
       eligBtn.addEventListener('click', function(e) {
         e.preventDefault();
         // Placeholder — in production, open bank EMI gateway
-        alert('EMI eligibility check coming soon. For now, please contact our team at +91-79-XXXX-XXXX or via chat.');
+        if (typeof showToast === 'function') { showToast('EMI available on all cards at checkout — contact our studio for instant approval'); }
       });
     }
 
