@@ -219,7 +219,7 @@ window.ABHUSHAN_PRODUCTS = [
       "necklaces",
       "earrings"
     ],
-    "sizes": [],
+    "sizes": ["Standard (40 cm)", "Extended (45 cm)"],
     "isNew": false,
     "isBestseller": false
   },
