@@ -800,12 +800,25 @@ window.ABHUSHAN_PRODUCTS = [
   });
 
   /* ============================================================
-     LOGO click scroll to top
+     LOGO click: redirect to index.html from subpages, scroll to top on home
      ============================================================ */
-  document.getElementById('logo-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
+  const logoLink = document.getElementById('logo-link');
+  if (logoLink) {
+    logoLink.addEventListener('click', (e) => {
+      const p = window.location.pathname.toLowerCase();
+      const isHome = p === '/' || p.endsWith('/index.html') || p.endsWith('/index') || p === '' || (!p.includes('.html') && !p.includes('/collection') && !p.includes('/product') && !p.includes('/story') && !p.includes('/privacy') && !p.includes('/404'));
+      if (isHome) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (window.location.hash) {
+          history.pushState('', document.title, window.location.pathname + window.location.search);
+        }
+      } else {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      }
+    });
+  }
 
   /* ============================================================
      LOGO LETTER-BY-LETTER CURSIVE ANIMATION
