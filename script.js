@@ -1,9 +1,330 @@
 window.ABHUSHAN_PRODUCTS = [
-  { slug: 'threadbare-ring', name: 'Threadbare Ring', price: 3999, desc: 'A whisper of gold, 18k, barely there, impossible to forget.', img: 'images/_Product Cards/prod_ring1.png', tags: ['rings'], sizes: ['4', '5', '6', '7', '8'], isBestseller: true },
-  { slug: 'hammered-hoop', name: 'Hammered Hoop Earring', price: 5299, desc: 'Hand-hammered texture catches light differently every hour of the day.', img: 'images/_Product Cards/prod_earring1.png', tags: ['earrings'], sizes: [], isBestseller: true },
-  { slug: 'greco-lariat', name: 'Greco Lariat', price: 32999, desc: 'Inspired by the stepwells of Gujarat. Adjustable drop. 22k gold.', img: 'images/_Product Cards/prod_necklace1.png', tags: ['necklaces'], sizes: [], isBestseller: true },
-  { slug: 'sweet-nothing', name: 'Sweet Nothing Bracelet', price: 11299, desc: 'A single delicate chain that says everything without speaking.', img: 'images/_Product Cards/prod_bracelet1.png', tags: ['bracelets', 'gifts'], sizes: ['15cm', '16cm', '17cm', '18cm'], isBestseller: true },
-  { slug: 'tomboy-ring', name: 'Tomboy Ring', price: 21999, desc: 'Bold width, soft edges. For people who don\'t do dainty.', img: 'images/_Product Cards/prod_ring2.png', tags: ['rings'], sizes: ['5', '6', '7', '8', '9', '10'] }
+  {
+    "slug": "threadbare-ring",
+    "name": "Threadbare Ring",
+    "price": 3999,
+    "desc": "A whisper of gold, 18k, barely there, impossible to forget.",
+    "descLong": "A whisper of gold. An 18K solid gold stacking ring, barely there, impossible to forget. Handcrafted in our Ahmedabad studio, designed to be stacked, loved, and worn every single day.",
+    "img": "images/_Product Cards/prod_ring1.png",
+    "tags": [
+      "rings",
+      "best-sellers"
+    ],
+    "sizes": [
+      "4",
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "isBestseller": true,
+    "isNew": false
+  },
+  {
+    "slug": "hammered-hoop",
+    "name": "Hammered Hoop Earring",
+    "price": 5299,
+    "desc": "Hand-hammered texture catches light differently every hour of the day.",
+    "descLong": "Hand-hammered 18K gold hoops that catch light differently every hour of the day. Handcrafted in Ahmedabad with a secure click closure for effortless daily wear.",
+    "img": "images/_Product Cards/prod_earring1.png",
+    "tags": [
+      "earrings",
+      "best-sellers"
+    ],
+    "sizes": [],
+    "isBestseller": true,
+    "isNew": false
+  },
+  {
+    "slug": "greco-lariat",
+    "name": "Greco Lariat",
+    "price": 32999,
+    "desc": "Inspired by the stepwells of Gujarat. Adjustable drop. 22k gold.",
+    "descLong": "Inspired by the stepwells of Gujarat. Adjustable drop lariat in 22K solid gold, handcrafted in Ahmedabad. Subtle, graceful, and engineered to drape naturally with every movement.",
+    "img": "images/_Product Cards/prod_necklace1.png",
+    "tags": [
+      "necklaces",
+      "best-sellers"
+    ],
+    "sizes": [],
+    "isBestseller": true,
+    "isNew": false
+  },
+  {
+    "slug": "sweet-nothing",
+    "name": "Sweet Nothing Bracelet",
+    "price": 11299,
+    "desc": "A single delicate chain that says everything without speaking.",
+    "descLong": "A single delicate 18K gold chain that says everything without speaking. Handcrafted in Ahmedabad with durable micro-welded links designed to never tangle or snag.",
+    "img": "images/_Product Cards/prod_bracelet1.png",
+    "tags": [
+      "bracelets",
+      "gifts",
+      "best-sellers"
+    ],
+    "sizes": [
+      "15cm",
+      "16cm",
+      "17cm",
+      "18cm"
+    ],
+    "isBestseller": true,
+    "isNew": false
+  },
+  {
+    "slug": "tomboy-ring",
+    "name": "Tomboy Ring",
+    "price": 21999,
+    "desc": "Bold width, soft edges. For people who don't do dainty.",
+    "descLong": "Bold width, soft edges. A solid 18K gold band with a flat square-edge profile and hand-brushed matte finish. For people who don't do dainty, crafted on our Ahmedabad bench.",
+    "img": "images/_Product Cards/prod_ring2.png",
+    "tags": [
+      "rings"
+    ],
+    "sizes": [
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10"
+    ],
+    "isBestseller": false,
+    "isNew": false
+  },
+  {
+    "slug": "suno-bangle",
+    "name": "Suno Bangle",
+    "price": 13999,
+    "desc": "A hand-beaten bangle, warm as afternoon light.",
+    "descLong": "Made on the same bench as our rings, the Suno carries the hammer marks of the hand that finished it. Wear it alone when the day asks for quiet, or stack it in threes when you want some noise. Water-safe, made for everyday wear.",
+    "img": "assets/img/products/suno-bangle.jpg",
+    "tags": [
+      "bracelets",
+      "gifts",
+      "new"
+    ],
+    "sizes": [
+      "2.4 in",
+      "2.6 in",
+      "2.8 in"
+    ],
+    "isNew": true,
+    "isBestseller": false
+  },
+  {
+    "slug": "dhoon-chain",
+    "name": "Dhoon Chain Bracelet",
+    "price": 8999,
+    "desc": "A fine curb chain with a hidden pearl clasp.",
+    "descLong": "The Dhoon is the bracelet equivalent of a kept promise — fine curb links, a single freshwater pearl hidden in the clasp, visible only to the wearer. It layers with everything you already own.",
+    "img": "assets/img/products/dhoon-chain.jpg",
+    "tags": [
+      "bracelets",
+      "gifts"
+    ],
+    "sizes": [
+      "16 cm",
+      "17 cm",
+      "18 cm",
+      "19 cm"
+    ],
+    "isNew": false,
+    "isBestseller": false
+  },
+  {
+    "slug": "amulet-charm",
+    "name": "Amulet Charm Bracelet",
+    "price": 15499,
+    "desc": "Five small charms gathered on one fine chain.",
+    "descLong": "An eye, a bell, a lotus, a sun, a star — five charms our workshop has cast for years, now on one adjustable chain. Given with meaning, worn with everything.",
+    "img": "assets/img/products/amulet-charm.jpg",
+    "tags": [
+      "bracelets",
+      "gifts",
+      "best-sellers"
+    ],
+    "sizes": [
+      "Adjustable"
+    ],
+    "isNew": false,
+    "isBestseller": true
+  },
+  {
+    "slug": "forever-fine",
+    "name": "Forever Chain — Fine",
+    "price": 7499,
+    "desc": "Our thinnest welded chain, measured to your wrist.",
+    "descLong": "The original Welded Forever circle: a whisper-fine chain measured to you and welded shut in the studio. No clasp, no taking it off — just a quiet ring of gold that goes where you go. Book a welding session and we'll fit you in forty minutes.",
+    "img": "assets/img/products/forever-fine.jpg",
+    "tags": [
+      "welded-forever",
+      "bracelets",
+      "new"
+    ],
+    "sizes": [
+      "Fitted in Studio"
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "isWelded": true
+  },
+  {
+    "slug": "forever-beaded",
+    "name": "Forever Chain — Beaded",
+    "price": 9999,
+    "desc": "Tiny gold beads on a chain welded shut to you.",
+    "descLong": "Little spheres of gold catch light all day on our beaded welded chain. Like every Forever piece it is measured to your wrist and welded shut at the fitting — water-safe, gym-proof, and made for never taking it off.",
+    "img": "assets/img/products/forever-beaded.jpg",
+    "tags": [
+      "welded-forever",
+      "bracelets",
+      "new"
+    ],
+    "sizes": [
+      "Fitted in Studio"
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "isWelded": true
+  },
+  {
+    "slug": "forever-charm-link",
+    "name": "Forever Charm Link",
+    "price": 12499,
+    "desc": "The welded chain for one small charm.",
+    "descLong": "For people who want their Forever chain to say one thing: a star, a heart, an initial, permanently part of the circle. Choose your charm at the fitting; we weld it on before your eyes.",
+    "img": "assets/img/products/forever-charm-link.jpg",
+    "tags": [
+      "welded-forever",
+      "bracelets",
+      "new"
+    ],
+    "sizes": [
+      "Fitted in Studio"
+    ],
+    "isNew": true,
+    "isBestseller": false,
+    "isWelded": true
+  },
+  {
+    "slug": "saadiya-set",
+    "name": "Saadiya Bridal Set",
+    "price": 48999,
+    "desc": "A bridal necklace and earring set in warm gold.",
+    "descLong": "Hand-finished in our Ahmedabad workshop for the day everything begins, the Saadiya pairs a mid-weight bridal necklace with matching earrings — traditional at heart, light enough to wear from the morning ceremony to the last dance.",
+    "img": "assets/img/products/saadiya-set.jpg",
+    "tags": [
+      "weddings",
+      "necklaces",
+      "earrings"
+    ],
+    "sizes": [],
+    "isNew": false,
+    "isBestseller": false
+  },
+  {
+    "slug": "choora-bangles",
+    "name": "Choora Bond Bangles (Pair)",
+    "price": 31999,
+    "desc": "A pair of hand-engraved bangles for both wrists.",
+    "descLong": "Engraved by hand, the Choora pair carries the old pattern our master craftsman learned in Gujarat — made in gold that is traditional in spirit but light enough to dance in. Sold as a pair, boxed for gifting.",
+    "img": "assets/img/products/choora-bangles.jpg",
+    "tags": [
+      "weddings",
+      "bracelets"
+    ],
+    "sizes": [
+      "2.4 in",
+      "2.6 in",
+      "2.8 in"
+    ],
+    "isNew": false,
+    "isBestseller": false
+  },
+  {
+    "slug": "vachan-rings",
+    "name": "Vachan Ring Set (His & Hers)",
+    "price": 39499,
+    "desc": "Two wedding bands made together on one bench.",
+    "descLong": "The Vachan set is two bands shaped in the same sitting — hers a little softer, his a little heavier — and engraved inside with the words you choose. Made to be exchanged, then worn for decades.",
+    "img": "assets/img/products/vachan-rings.jpg",
+    "tags": [
+      "weddings",
+      "rings",
+      "gifts"
+    ],
+    "sizes": [
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14"
+    ],
+    "isNew": false,
+    "isBestseller": false
+  },
+  {
+    "slug": "moonsilver-pendant",
+    "name": "Moonsilver Pendant",
+    "price": 6499,
+    "desc": "A crescent and one pearl on a fine gold chain.",
+    "descLong": "The Moonsilver pairs a small gold crescent with a single freshwater pearl — the gift that says \"you are my calm\" without saying anything at all. Arrives in our cotton-lined box with a handwritten card, ready to give.",
+    "img": "assets/img/products/moonsilver-pendant.jpg",
+    "tags": [
+      "gifts",
+      "necklaces",
+      "new"
+    ],
+    "sizes": [
+      "40 + 5 cm extender"
+    ],
+    "isNew": true,
+    "isBestseller": false
+  },
+  {
+    "slug": "sunhera-chain",
+    "name": "Sunhera Fine Chain",
+    "price": 7499,
+    "desc": "A whisper-thin gold chain that goes with everything.",
+    "descLong": "Including nothing at all. The Sunhera is the safest beautiful bet in our gift shelf — a fine, strong, hand-finished chain that layers under lockets or shines alone.",
+    "img": "assets/img/products/sunhera-chain.jpg",
+    "tags": [
+      "gifts",
+      "necklaces"
+    ],
+    "sizes": [
+      "40 cm",
+      "45 cm",
+      "50 cm"
+    ],
+    "isNew": false,
+    "isBestseller": false
+  },
+  {
+    "slug": "nazar-charm",
+    "name": "Nazar Charm",
+    "price": 4499,
+    "desc": "A tiny gold eye charm — protection, folded into beauty.",
+    "descLong": "Our most-gifted piece for people you love: a small gold eye on a fine chain, hand-set and ready to give. Comes boxed with a card that explains the tradition, for when they ask what it means.",
+    "img": "assets/img/products/nazar-charm.jpg",
+    "tags": [
+      "gifts",
+      "necklaces",
+      "earrings",
+      "best-sellers",
+      "new"
+    ],
+    "sizes": [
+      "45 cm"
+    ],
+    "isNew": true,
+    "isBestseller": true
+  }
 ];
 
 /* =============================================================
@@ -863,47 +1184,418 @@ window.ABHUSHAN_PRODUCTS = [
      SEARCH FUNCTIONALITY LOGIC
      ============================================================ */
   const searchCatalog = [
-    {
-      name: "Threadbare Ring",
-      price: "₹3,999",
-      category: "Rings",
-      image: "images/_Product Cards/prod_ring1.png",
-      url: "product-threadbare-ring.html",
-      keywords: ["ring", "threadbare", "thin", "band", "minimalist", "18k", "gold", "stacking", "gift", "gifts", "wedding", "bridal"]
-    },
-    {
-      name: "Hammered Hoop Earring",
-      price: "₹5,299",
-      category: "Earrings",
-      image: "images/_Product Cards/prod_earring1.png",
-      url: "product-hammered-hoop.html",
-      keywords: ["earring", "hammered", "hoop", "circular", "18k", "gold", "gift", "gifts", "wedding", "bridal"]
-    },
-    {
-      name: "Greco Lariat",
-      price: "₹32,999",
-      category: "Necklaces",
-      image: "images/_Product Cards/prod_necklace1.png",
-      url: "product-greco-lariat.html",
-      keywords: ["necklace", "lariat", "greco", "chain", "pendant", "22k", "gold", "emerald", "gift", "gifts", "wedding", "bridal"]
-    },
-    {
-      name: "Sweet Nothing Bracelet",
-      price: "₹11,299",
-      category: "Bracelets",
-      image: "images/_Product Cards/prod_bracelet1.png",
-      url: "product-sweet-nothing.html",
-      keywords: ["bracelet", "sweet", "nothing", "chain", "thin", "18k", "gold", "gift", "gifts", "wedding", "bridal", "welded", "forever", "permanent"]
-    },
-    {
-      name: "Tomboy Ring",
-      price: "₹21,999",
-      category: "Rings",
-      image: "images/_Product Cards/prod_ring2.png",
-      url: "product-tomboy-ring.html",
-      keywords: ["ring", "tomboy", "bold", "matte", "brushed", "18k", "gold", "gift", "gifts", "wedding", "bridal"]
-    }
-  ];
+  {
+    "name": "Threadbare Ring",
+    "price": "₹3,999",
+    "category": "Rings",
+    "image": "images/_Product Cards/prod_ring1.png",
+    "url": "product-threadbare-ring.html",
+    "keywords": [
+      "threadbare ring",
+      "threadbare-ring",
+      "gold",
+      "18k",
+      "22k",
+      "rings",
+      "best-sellers",
+      "threadbare",
+      "ring",
+      "band",
+      "stacking"
+    ]
+  },
+  {
+    "name": "Hammered Hoop Earring",
+    "price": "₹5,299",
+    "category": "Earrings",
+    "image": "images/_Product Cards/prod_earring1.png",
+    "url": "product-hammered-hoop.html",
+    "keywords": [
+      "hammered hoop earring",
+      "hammered-hoop",
+      "gold",
+      "18k",
+      "22k",
+      "earrings",
+      "best-sellers",
+      "hammered",
+      "hoop",
+      "earring",
+      "stud"
+    ]
+  },
+  {
+    "name": "Greco Lariat",
+    "price": "₹32,999",
+    "category": "Necklaces",
+    "image": "images/_Product Cards/prod_necklace1.png",
+    "url": "product-greco-lariat.html",
+    "keywords": [
+      "greco lariat",
+      "greco-lariat",
+      "gold",
+      "18k",
+      "22k",
+      "necklaces",
+      "best-sellers",
+      "greco",
+      "lariat",
+      "necklace",
+      "pendant",
+      "chain"
+    ]
+  },
+  {
+    "name": "Sweet Nothing Bracelet",
+    "price": "₹11,299",
+    "category": "Bracelets",
+    "image": "images/_Product Cards/prod_bracelet1.png",
+    "url": "product-sweet-nothing.html",
+    "keywords": [
+      "sweet nothing bracelet",
+      "sweet-nothing",
+      "gold",
+      "18k",
+      "22k",
+      "bracelets",
+      "gifts",
+      "best-sellers",
+      "sweet",
+      "nothing",
+      "bracelet",
+      "bangle",
+      "chain",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Tomboy Ring",
+    "price": "₹21,999",
+    "category": "Rings",
+    "image": "images/_Product Cards/prod_ring2.png",
+    "url": "product-tomboy-ring.html",
+    "keywords": [
+      "tomboy ring",
+      "tomboy-ring",
+      "gold",
+      "18k",
+      "22k",
+      "rings",
+      "tomboy",
+      "ring",
+      "band",
+      "stacking"
+    ]
+  },
+  {
+    "name": "Suno Bangle",
+    "price": "₹13,999",
+    "category": "Bracelets",
+    "image": "assets/img/products/suno-bangle.jpg",
+    "url": "product-suno-bangle.html",
+    "keywords": [
+      "suno bangle",
+      "suno-bangle",
+      "gold",
+      "18k",
+      "22k",
+      "bracelets",
+      "gifts",
+      "new",
+      "suno",
+      "bangle",
+      "chain",
+      "bracelet",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Dhoon Chain Bracelet",
+    "price": "₹8,999",
+    "category": "Bracelets",
+    "image": "assets/img/products/dhoon-chain.jpg",
+    "url": "product-dhoon-chain.html",
+    "keywords": [
+      "dhoon chain bracelet",
+      "dhoon-chain",
+      "gold",
+      "18k",
+      "22k",
+      "bracelets",
+      "gifts",
+      "dhoon",
+      "chain",
+      "bracelet",
+      "bangle",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Amulet Charm Bracelet",
+    "price": "₹15,499",
+    "category": "Bracelets",
+    "image": "assets/img/products/amulet-charm.jpg",
+    "url": "product-amulet-charm.html",
+    "keywords": [
+      "amulet charm bracelet",
+      "amulet-charm",
+      "gold",
+      "18k",
+      "22k",
+      "bracelets",
+      "gifts",
+      "best-sellers",
+      "amulet",
+      "charm",
+      "bracelet",
+      "bangle",
+      "chain",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Forever Chain — Fine",
+    "price": "₹7,499",
+    "category": "Welded-forever",
+    "image": "assets/img/products/forever-fine.jpg",
+    "url": "product-forever-fine.html",
+    "keywords": [
+      "forever chain — fine",
+      "forever-fine",
+      "gold",
+      "18k",
+      "22k",
+      "welded-forever",
+      "bracelets",
+      "new",
+      "forever",
+      "chain",
+      "—",
+      "fine",
+      "welded",
+      "permanent",
+      "bangle",
+      "bracelet"
+    ]
+  },
+  {
+    "name": "Forever Chain — Beaded",
+    "price": "₹9,999",
+    "category": "Welded-forever",
+    "image": "assets/img/products/forever-beaded.jpg",
+    "url": "product-forever-beaded.html",
+    "keywords": [
+      "forever chain — beaded",
+      "forever-beaded",
+      "gold",
+      "18k",
+      "22k",
+      "welded-forever",
+      "bracelets",
+      "new",
+      "forever",
+      "chain",
+      "—",
+      "beaded",
+      "welded",
+      "permanent",
+      "bangle",
+      "bracelet"
+    ]
+  },
+  {
+    "name": "Forever Charm Link",
+    "price": "₹12,499",
+    "category": "Welded-forever",
+    "image": "assets/img/products/forever-charm-link.jpg",
+    "url": "product-forever-charm-link.html",
+    "keywords": [
+      "forever charm link",
+      "forever-charm-link",
+      "gold",
+      "18k",
+      "22k",
+      "welded-forever",
+      "bracelets",
+      "new",
+      "forever",
+      "charm",
+      "link",
+      "welded",
+      "permanent",
+      "bangle",
+      "chain",
+      "bracelet"
+    ]
+  },
+  {
+    "name": "Saadiya Bridal Set",
+    "price": "₹48,999",
+    "category": "Weddings",
+    "image": "assets/img/products/saadiya-set.jpg",
+    "url": "product-saadiya-set.html",
+    "keywords": [
+      "saadiya bridal set",
+      "saadiya-set",
+      "gold",
+      "18k",
+      "22k",
+      "weddings",
+      "necklaces",
+      "earrings",
+      "saadiya",
+      "bridal",
+      "set",
+      "wedding",
+      "marriage",
+      "necklace",
+      "pendant",
+      "chain",
+      "lariat",
+      "earring",
+      "hoop",
+      "stud"
+    ]
+  },
+  {
+    "name": "Choora Bond Bangles (Pair)",
+    "price": "₹31,999",
+    "category": "Weddings",
+    "image": "assets/img/products/choora-bangles.jpg",
+    "url": "product-choora-bangles.html",
+    "keywords": [
+      "choora bond bangles (pair)",
+      "choora-bangles",
+      "gold",
+      "18k",
+      "22k",
+      "weddings",
+      "bracelets",
+      "choora",
+      "bond",
+      "bangles",
+      "(pair)",
+      "wedding",
+      "bridal",
+      "marriage",
+      "bangle",
+      "chain",
+      "bracelet"
+    ]
+  },
+  {
+    "name": "Vachan Ring Set (His & Hers)",
+    "price": "₹39,499",
+    "category": "Weddings",
+    "image": "assets/img/products/vachan-rings.jpg",
+    "url": "product-vachan-rings.html",
+    "keywords": [
+      "vachan ring set (his & hers)",
+      "vachan-rings",
+      "gold",
+      "18k",
+      "22k",
+      "weddings",
+      "rings",
+      "gifts",
+      "vachan",
+      "ring",
+      "set",
+      "(his",
+      "&",
+      "hers)",
+      "wedding",
+      "bridal",
+      "marriage",
+      "band",
+      "stacking",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Moonsilver Pendant",
+    "price": "₹6,499",
+    "category": "Gifts",
+    "image": "assets/img/products/moonsilver-pendant.jpg",
+    "url": "product-moonsilver-pendant.html",
+    "keywords": [
+      "moonsilver pendant",
+      "moonsilver-pendant",
+      "gold",
+      "18k",
+      "22k",
+      "gifts",
+      "necklaces",
+      "new",
+      "moonsilver",
+      "pendant",
+      "necklace",
+      "chain",
+      "lariat",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Sunhera Fine Chain",
+    "price": "₹7,499",
+    "category": "Gifts",
+    "image": "assets/img/products/sunhera-chain.jpg",
+    "url": "product-sunhera-chain.html",
+    "keywords": [
+      "sunhera fine chain",
+      "sunhera-chain",
+      "gold",
+      "18k",
+      "22k",
+      "gifts",
+      "necklaces",
+      "sunhera",
+      "fine",
+      "chain",
+      "necklace",
+      "pendant",
+      "lariat",
+      "gift",
+      "present"
+    ]
+  },
+  {
+    "name": "Nazar Charm",
+    "price": "₹4,499",
+    "category": "Gifts",
+    "image": "assets/img/products/nazar-charm.jpg",
+    "url": "product-nazar-charm.html",
+    "keywords": [
+      "nazar charm",
+      "nazar-charm",
+      "gold",
+      "18k",
+      "22k",
+      "gifts",
+      "necklaces",
+      "earrings",
+      "best-sellers",
+      "new",
+      "nazar",
+      "charm",
+      "necklace",
+      "pendant",
+      "chain",
+      "lariat",
+      "earring",
+      "hoop",
+      "stud",
+      "gift",
+      "present"
+    ]
+  }
+];
 
   function injectSearchWidget() {
     // 1. Locate or create trigger icon in nav-top-right

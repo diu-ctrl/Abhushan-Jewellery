@@ -11,12 +11,109 @@
   };
   var KEY = 'abhushan_cart_v1';
   var PRODUCTS = {
-    'Threadbare Ring':       { price: 3999,  img: 'images/_Product%20Cards/prod_ring1.png',     href: 'product-threadbare-ring.html', category: 'Rings' },
-    'Hammered Hoop Earring': { price: 5299,  img: 'images/_Product%20Cards/prod_earring1.png',  href: 'product-hammered-hoop.html',   category: 'Earrings' },
-    'Greco Lariat':          { price: 32999, img: 'images/_Product%20Cards/prod_necklace1.png', href: 'product-greco-lariat.html',    category: 'Necklaces' },
-    'Sweet Nothing Bracelet':{ price: 11299, img: 'images/_Product%20Cards/prod_bracelet1.png', href: 'product-sweet-nothing.html',   category: 'Bracelets' },
-    'Tomboy Ring':           { price: 21999, img: 'images/_Product%20Cards/prod_ring2.png',     href: 'product-tomboy-ring.html',     category: 'Rings' }
-  };
+    "Threadbare Ring": {
+        "price": 3999,
+        "img": "images/_Product Cards/prod_ring1.png",
+        "href": "product-threadbare-ring.html",
+        "category": "Rings"
+    },
+    "Hammered Hoop Earring": {
+        "price": 5299,
+        "img": "images/_Product Cards/prod_earring1.png",
+        "href": "product-hammered-hoop.html",
+        "category": "Earrings"
+    },
+    "Greco Lariat": {
+        "price": 32999,
+        "img": "images/_Product Cards/prod_necklace1.png",
+        "href": "product-greco-lariat.html",
+        "category": "Necklaces"
+    },
+    "Sweet Nothing Bracelet": {
+        "price": 11299,
+        "img": "images/_Product Cards/prod_bracelet1.png",
+        "href": "product-sweet-nothing.html",
+        "category": "Bracelets"
+    },
+    "Tomboy Ring": {
+        "price": 21999,
+        "img": "images/_Product Cards/prod_ring2.png",
+        "href": "product-tomboy-ring.html",
+        "category": "Rings"
+    },
+    "Suno Bangle": {
+        "price": 13999,
+        "img": "assets/img/products/suno-bangle.jpg",
+        "href": "product-suno-bangle.html",
+        "category": "Bracelets"
+    },
+    "Dhoon Chain Bracelet": {
+        "price": 8999,
+        "img": "assets/img/products/dhoon-chain.jpg",
+        "href": "product-dhoon-chain.html",
+        "category": "Bracelets"
+    },
+    "Amulet Charm Bracelet": {
+        "price": 15499,
+        "img": "assets/img/products/amulet-charm.jpg",
+        "href": "product-amulet-charm.html",
+        "category": "Bracelets"
+    },
+    "Forever Chain — Fine": {
+        "price": 7499,
+        "img": "assets/img/products/forever-fine.jpg",
+        "href": "product-forever-fine.html",
+        "category": "Bracelets"
+    },
+    "Forever Chain — Beaded": {
+        "price": 9999,
+        "img": "assets/img/products/forever-beaded.jpg",
+        "href": "product-forever-beaded.html",
+        "category": "Bracelets"
+    },
+    "Forever Charm Link": {
+        "price": 12499,
+        "img": "assets/img/products/forever-charm-link.jpg",
+        "href": "product-forever-charm-link.html",
+        "category": "Bracelets"
+    },
+    "Saadiya Bridal Set": {
+        "price": 48999,
+        "img": "assets/img/products/saadiya-set.jpg",
+        "href": "product-saadiya-set.html",
+        "category": "Necklaces"
+    },
+    "Choora Bond Bangles (Pair)": {
+        "price": 31999,
+        "img": "assets/img/products/choora-bangles.jpg",
+        "href": "product-choora-bangles.html",
+        "category": "Bracelets"
+    },
+    "Vachan Ring Set (His & Hers)": {
+        "price": 39499,
+        "img": "assets/img/products/vachan-rings.jpg",
+        "href": "product-vachan-rings.html",
+        "category": "Rings"
+    },
+    "Moonsilver Pendant": {
+        "price": 6499,
+        "img": "assets/img/products/moonsilver-pendant.jpg",
+        "href": "product-moonsilver-pendant.html",
+        "category": "Necklaces"
+    },
+    "Sunhera Fine Chain": {
+        "price": 7499,
+        "img": "assets/img/products/sunhera-chain.jpg",
+        "href": "product-sunhera-chain.html",
+        "category": "Necklaces"
+    },
+    "Nazar Charm": {
+        "price": 4499,
+        "img": "assets/img/products/nazar-charm.jpg",
+        "href": "product-nazar-charm.html",
+        "category": "Necklaces"
+    }
+};
   var items = [];
   function load(){ try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ items = []; } }
   function save(){ try { localStorage.setItem(KEY, JSON.stringify(items)); } catch(e){} }
