@@ -7641,49 +7641,128 @@ body { font-size: var(--ab-body); }
   object-position: center;
   transform: none;
 }
-/* ===== PHASE 3 — THREE EDITS: compact vertical cards ===== */
+/* ===== THREE EDITS: vertical cards matching How We Work section ===== */
 .edits-row-tiffany {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: stretch;
-  gap: 14px;
-  padding: 40px 20px 8px;
-  max-width: 720px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xl, 32px);
+  max-width: var(--max-width, 1440px);
   margin: 0 auto;
+  padding: var(--space-lg, 24px) var(--space-xl, 32px) var(--space-3xl, 64px);
+  box-sizing: border-box;
 }
+
 .edit-card-tiffany {
-  flex: 0 1 200px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: #FFFFFF;
-  border: 1px solid var(--color-border, #E7E1D8);
-  padding: 14px 14px 16px;
-  text-align: left;
-  transition: transform .25s ease, box-shadow .25s ease;
+  background: var(--color-white, #FFFFFF);
+  border: 1px solid var(--color-border, #E2DDD8);
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--dur, 0.3s) var(--ease, ease), transform var(--dur, 0.3s) var(--ease, ease), box-shadow var(--dur, 0.3s) var(--ease, ease);
 }
-.edit-card-tiffany:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,.08); }
-.edit-card-media-tiffany { display: block; aspect-ratio: 3 / 4; overflow: hidden; }
-.edit-card-media-tiffany img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.edit-card-tiffany:hover {
+  background-color: var(--color-bg-blush, #F9F1EE);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.05);
+}
+
+.edit-card-media-tiffany {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1.1 / 1;
+  overflow: hidden;
+}
+
+.edit-card-media-tiffany img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--dur, 0.3s) var(--ease, ease);
+}
+
+.edit-card-tiffany:hover .edit-card-media-tiffany img {
+  transform: scale(1.02);
+}
+
+.edit-card-info-tiffany {
+  padding: var(--space-xl, 32px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-sm, 8px);
+  flex: 1;
+  box-sizing: border-box;
+}
+
 .edit-card-title-tiffany {
-  font-family: 'Playfair Display', Georgia, serif;
-  font-size: 15px;
-  letter-spacing: .04em;
-  color: var(--color-text, #1c1c1c);
+  font-family: var(--font-serif, 'Playfair Display', Georgia, serif);
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--color-text, #322325);
+  margin: 0;
+  line-height: 1.3;
 }
+
 .edit-card-sub-tiffany {
-  font-family: 'Jost', sans-serif;
-  font-size: 11.5px;
-  line-height: 1.45;
-  color: var(--color-text-light, #6b6b6b);
+  font-family: var(--font-sans, 'TT Fors', 'Jost', sans-serif);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-light, #6B6460);
+  font-weight: 300;
+  flex: 1;
+  margin: 0;
 }
-@media (max-width: 640px) {
-  .edits-row-tiffany { gap: 10px; padding: 28px 14px 4px; }
-  .edit-card-tiffany { flex: 1 1 0; padding: 10px 10px 12px; }
-  .edit-card-title-tiffany { font-size: 13px; }
-  .edit-card-sub-tiffany { display: none; }
+
+.edit-card-link-tiffany {
+  font-family: var(--font-sans, 'TT Fors', 'Jost', sans-serif);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text, #322325);
+  border-bottom: 1px solid var(--color-text, #322325);
+  padding-bottom: 2px;
+  font-weight: 600;
+  margin-top: var(--space-md, 16px);
+  transition: color var(--dur, 0.3s) ease, border-color var(--dur, 0.3s) ease;
+  display: inline-block;
 }
+
+.edit-card-tiffany:hover .edit-card-link-tiffany {
+  color: var(--color-gold, #C08B5D);
+  border-color: var(--color-gold, #C08B5D);
+}
+
+@media (max-width: 1024px) {
+  .edits-row-tiffany {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .edit-card-tiffany:last-child {
+    grid-column: span 2;
+  }
+  .edit-card-info-tiffany {
+    padding: var(--space-lg, 24px);
+  }
+}
+
+@media (max-width: 768px) {
+  .edits-row-tiffany {
+    grid-template-columns: 1fr;
+    gap: var(--space-md, 16px);
+    padding-left: var(--space-lg, 20px);
+    padding-right: var(--space-lg, 20px);
+  }
+  .edit-card-tiffany:last-child {
+    grid-column: span 1;
+  }
+  .edit-card-info-tiffany {
+    padding: var(--space-lg, 20px);
+  }
+}
+
 /* ===== PHASE 3 — WELDED FOREVER FIT NOTE ===== */
 .welded-note-tiffany {
   font-size: 12px;
@@ -7703,6 +7782,7 @@ a.logo-link { text-decoration: none; color: inherit; display: inline-block; }
 .section-category-grid,
 .section-featured-collection,
 .section-experience-tiffany,
+.edits-row-tiffany,
 .section-booking-tiffany {
   padding-top: var(--sp-section);
   padding-bottom: var(--sp-section);
