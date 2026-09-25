@@ -7967,22 +7967,18 @@ html, body { overflow-x: hidden; overflow-x: clip; }
    PHASE 7 — CHAT PANEL: transform slide (iOS-safe) + FOOTER REDESIGN
    ============================================================ */
 
-/* 1) Mobile chat panel: slide with transform instead of bottom:%.
-      Percent-based `bottom` animation is unreliable on iOS Safari (dynamic
-      toolbar changes the viewport mid-animation); transform is GPU-composited
-      and deterministic. Closed = pushed fully below the screen. */
-@media (max-width: 640px) {
-  .chat-widget-panel {
-    bottom: 0;
-    transform: translateY(105%);
-    opacity: 1;
-    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    will-change: transform;
-  }
-  .chat-widget-panel.open {
-    transform: translateY(0);
+/* 1) Mobile: Remove floating chat button and widget on mobile screens (<= 768px) */
+@media (max-width: 768px) {
+  #chat-widget-container,
+  #chat-widget-container *,
+  .chat-widget-trigger {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
   }
 }
+
 
 /* 2) Footer — three centered columns (Inner Circle column removed).
       Unified flexbox group horizontally centered above the Instagram icon. */
