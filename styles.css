@@ -7985,16 +7985,35 @@ html, body { overflow-x: hidden; overflow-x: clip; }
 }
 
 /* 2) Footer — three centered columns (Inner Circle column removed).
-      Mirrors the existing responsive ladder (3 / 2 / 1 columns). */
+      Unified flexbox group horizontally centered above the Instagram icon. */
 .footer-inner {
-  grid-template-columns: repeat(3, 1fr) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: clamp(48px, 8vw, 100px) !important;
+  max-width: 900px !important;
+  margin: 0 auto !important;
+  padding-bottom: var(--space-xl, 36px) !important;
   border-bottom: none !important; /* single line stays on .footer-bottom only */
 }
-@media (max-width: 1024px) {
-  .footer-inner { grid-template-columns: 1fr 1fr !important; }
+.footer-inner .footer-col {
+  flex: 0 0 auto;
+  min-width: 120px;
+  text-align: left;
+  align-items: flex-start;
 }
 @media (max-width: 768px) {
-  .footer-inner { grid-template-columns: 1fr !important; }
+  .footer-inner {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: var(--space-xl, 28px) !important;
+  }
+  .footer-inner .footer-col {
+    align-items: center !important;
+    text-align: center !important;
+    min-width: 0;
+  }
 }
 
 /* 3) Instagram row — centered at the bottom of the footer,
