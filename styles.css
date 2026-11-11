@@ -8037,3 +8037,136 @@ html, body { overflow-x: hidden; overflow-x: clip; }
   white-space: nowrap;
   border: 0;
 }
+
+
+/* ============================================================
+   AB-P5-FINISH v1 — Material & Finish (verifier build 2026-11-12)
+   Adds: brand selection color, unified keyboard focus ring,
+   button hover elevation + press feedback + gold sheen on primary
+   CTAs, footer link underline slide, wishlist heart pop.
+   Pure CSS. No layout or spacing changes. All motion is guarded
+   by the prefers-reduced-motion block below (P5-7) and never
+   conflicts with the global reduced-motion rules earlier in
+   this file.
+   ============================================================ */
+
+/* P5-1 ::selection — antique gold wash, legible on light and dark */
+::selection {
+  background: rgba(192, 139, 93, 0.30);
+  color: inherit;
+}
+
+/* P5-2 unified keyboard focus ring (focus-visible only: mouse
+   clicks unaffected; existing component focus rules stand) */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+.footer-subscribe-form input:focus-visible {
+  outline: 2px solid var(--color-gold) !important;
+  outline-offset: 3px !important;
+}
+
+/* P5-3 button hover elevation + press feedback */
+.btn-dark:hover,
+.btn-light:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(50, 35, 37, 0.16);
+}
+.btn-add-to-bag-tiffany:hover,
+.btn-booking-submit:hover,
+.btn-directions-tiffany:hover {
+  box-shadow: 0 10px 24px rgba(192, 139, 93, 0.32);
+}
+.btn:active,
+.btn-dark:active,
+.btn-light:active,
+.btn-add-to-bag-tiffany:active,
+.btn-booking-submit:active,
+.btn-directions-tiffany:active,
+.btn-studio-book-tiffany:active,
+.btn-book-appointment-tiffany:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.08s;
+}
+
+/* P5-4 gold sheen sweep on primary CTAs */
+.btn-add-to-bag-tiffany,
+.btn-booking-submit {
+  position: relative;
+  overflow: hidden;
+}
+.btn-add-to-bag-tiffany::after,
+.btn-booking-submit::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -80%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(105deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-20deg);
+  transition: left 0.7s var(--ease);
+  pointer-events: none;
+}
+.btn-add-to-bag-tiffany:hover::after,
+.btn-booking-submit:hover::after {
+  left: 130%;
+}
+
+/* P5-5 wishlist heart pop on activation */
+@keyframes ab-heart-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.32); }
+  100% { transform: scale(1); }
+}
+.wishlist-heart.active {
+  animation: ab-heart-pop 0.4s var(--ease);
+}
+
+/* P5-6 footer link underline slide */
+.footer-link,
+.footer-legal-links a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: color var(--dur) var(--ease), background-size var(--dur) var(--ease);
+}
+.footer-link:hover,
+.footer-legal-links a:hover {
+  background-size: 100% 1px;
+}
+
+/* P5-7 motion safety for everything added above */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active,
+  .btn-dark:active,
+  .btn-light:active,
+  .btn-add-to-bag-tiffany:active,
+  .btn-booking-submit:active,
+  .btn-directions-tiffany:active,
+  .btn-studio-book-tiffany:active,
+  .btn-book-appointment-tiffany:active {
+    transform: none;
+    transition-duration: 0s;
+  }
+  .btn-dark:hover,
+  .btn-light:hover {
+    transform: none;
+  }
+  .btn-add-to-bag-tiffany::after,
+  .btn-booking-submit::after {
+    display: none;
+  }
+  .wishlist-heart.active {
+    animation: none;
+  }
+  .footer-link,
+  .footer-legal-links a {
+    transition: color var(--dur) var(--ease);
+  }
+}
