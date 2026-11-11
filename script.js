@@ -5,7 +5,7 @@ window.ABHUSHAN_PRODUCTS = [
     "price": 3999,
     "desc": "A whisper of gold, 18k, barely there, impossible to forget.",
     "descLong": "A whisper of gold. An 18K solid gold stacking ring, barely there, impossible to forget. Handcrafted in our Ahmedabad studio, designed to be stacked, loved, and worn every single day.",
-    "img": "images/_Product Cards/prod_ring1.png",
+    "img": "images/_Product Cards/prod_ring1.webp",
     "tags": [
       "rings",
       "best-sellers"
@@ -26,7 +26,7 @@ window.ABHUSHAN_PRODUCTS = [
     "price": 5299,
     "desc": "Hand-hammered texture catches light differently every hour of the day.",
     "descLong": "Hand-hammered 18K gold hoops that catch light differently every hour of the day. Handcrafted in Ahmedabad with a secure click closure for effortless daily wear.",
-    "img": "images/_Product Cards/prod_earring1.png",
+    "img": "images/_Product Cards/prod_earring1.webp",
     "tags": [
       "earrings",
       "best-sellers"
@@ -41,7 +41,7 @@ window.ABHUSHAN_PRODUCTS = [
     "price": 32999,
     "desc": "Inspired by the stepwells of Gujarat. Adjustable drop. 22k gold.",
     "descLong": "Inspired by the stepwells of Gujarat. Adjustable drop lariat in 22K solid gold, handcrafted in Ahmedabad. Subtle, graceful, and engineered to drape naturally with every movement.",
-    "img": "images/_Product Cards/prod_necklace1.png",
+    "img": "images/_Product Cards/prod_necklace1.webp",
     "tags": [
       "necklaces",
       "best-sellers"
@@ -56,7 +56,7 @@ window.ABHUSHAN_PRODUCTS = [
     "price": 11299,
     "desc": "A single delicate chain that says everything without speaking.",
     "descLong": "A single delicate 18K gold chain that says everything without speaking. Handcrafted in Ahmedabad with durable micro-welded links designed to never tangle or snag.",
-    "img": "images/_Product Cards/prod_bracelet1.png",
+    "img": "images/_Product Cards/prod_bracelet1.webp",
     "tags": [
       "bracelets",
       "gifts",
@@ -77,7 +77,7 @@ window.ABHUSHAN_PRODUCTS = [
     "price": 21999,
     "desc": "Bold width, soft edges. For people who don't do dainty.",
     "descLong": "Bold width, soft edges. A solid 18K gold band with a flat square-edge profile and hand-brushed matte finish. For people who don't do dainty, crafted on our Ahmedabad bench.",
-    "img": "images/_Product Cards/prod_ring2.png",
+    "img": "images/_Product Cards/prod_ring2.webp",
     "tags": [
       "rings"
     ],
@@ -1107,7 +1107,7 @@ window.ABHUSHAN_PRODUCTS = [
     "name": "Threadbare Ring",
     "price": "₹3,999",
     "category": "Rings",
-    "image": "images/_Product Cards/prod_ring1.png",
+    "image": "images/_Product Cards/prod_ring1.webp",
     "url": "product-threadbare-ring.html",
     "keywords": [
       "threadbare ring",
@@ -1127,7 +1127,7 @@ window.ABHUSHAN_PRODUCTS = [
     "name": "Hammered Hoop Earring",
     "price": "₹5,299",
     "category": "Earrings",
-    "image": "images/_Product Cards/prod_earring1.png",
+    "image": "images/_Product Cards/prod_earring1.webp",
     "url": "product-hammered-hoop.html",
     "keywords": [
       "hammered hoop earring",
@@ -1147,7 +1147,7 @@ window.ABHUSHAN_PRODUCTS = [
     "name": "Greco Lariat",
     "price": "₹32,999",
     "category": "Necklaces",
-    "image": "images/_Product Cards/prod_necklace1.png",
+    "image": "images/_Product Cards/prod_necklace1.webp",
     "url": "product-greco-lariat.html",
     "keywords": [
       "greco lariat",
@@ -1168,7 +1168,7 @@ window.ABHUSHAN_PRODUCTS = [
     "name": "Sweet Nothing Bracelet",
     "price": "₹11,299",
     "category": "Bracelets",
-    "image": "images/_Product Cards/prod_bracelet1.png",
+    "image": "images/_Product Cards/prod_bracelet1.webp",
     "url": "product-sweet-nothing.html",
     "keywords": [
       "sweet nothing bracelet",
@@ -1192,7 +1192,7 @@ window.ABHUSHAN_PRODUCTS = [
     "name": "Tomboy Ring",
     "price": "₹21,999",
     "category": "Rings",
-    "image": "images/_Product Cards/prod_ring2.png",
+    "image": "images/_Product Cards/prod_ring2.webp",
     "url": "product-tomboy-ring.html",
     "keywords": [
       "tomboy ring",
@@ -1949,15 +1949,15 @@ window.ABHUSHAN_PRODUCTS = [
 
     // Map product names to categories and transparent card assets
     const VTO_OVERLAY_MAP = {
-      'threadbare ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' },
-      'tomboy ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring2.png' },
-      'hammered hoop earring': { category: 'earring', overlay: 'images/_Product Cards/prod_earring1.png' },
-      'greco lariat': { category: 'necklace', overlay: 'images/_Product Cards/prod_necklace1.png' },
-      'sweet nothing bracelet': { category: 'bracelet', overlay: 'images/_Product Cards/prod_bracelet1.png' }
+      'threadbare ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.webp' },
+      'tomboy ring': { category: 'ring', overlay: 'images/_Product Cards/prod_ring2.webp' },
+      'hammered hoop earring': { category: 'earring', overlay: 'images/_Product Cards/prod_earring1.webp' },
+      'greco lariat': { category: 'necklace', overlay: 'images/_Product Cards/prod_necklace1.webp' },
+      'sweet nothing bracelet': { category: 'bracelet', overlay: 'images/_Product Cards/prod_bracelet1.webp' }
     };
 
     const normName = productName.toLowerCase();
-    const config = VTO_OVERLAY_MAP[normName] || { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.png' };
+    const config = VTO_OVERLAY_MAP[normName] || { category: 'ring', overlay: 'images/_Product Cards/prod_ring1.webp' };
 
     // Alignment Guide SVG Silhouettes
     const handSvg = `
@@ -2754,7 +2754,7 @@ window.ABHUSHAN_PRODUCTS = [
         name: 'Threadbare Ring',
         price: '₹3,999',
         href: 'product-threadbare-ring.html',
-        img: 'images/_Product%20Cards/prod_ring1.png',
+        img: 'images/_Product%20Cards/prod_ring1.webp',
         category: 'ring'
       },
       {
@@ -2762,7 +2762,7 @@ window.ABHUSHAN_PRODUCTS = [
         name: 'Hammered Hoop Earring',
         price: '₹5,299',
         href: 'product-hammered-hoop.html',
-        img: 'images/_Product%20Cards/prod_earring1.png',
+        img: 'images/_Product%20Cards/prod_earring1.webp',
         category: 'earring'
       },
       {
@@ -2770,7 +2770,7 @@ window.ABHUSHAN_PRODUCTS = [
         name: 'Greco Lariat',
         price: '₹32,999',
         href: 'product-greco-lariat.html',
-        img: 'images/_Product%20Cards/prod_necklace1.png',
+        img: 'images/_Product%20Cards/prod_necklace1.webp',
         category: 'necklace'
       },
       {
@@ -2778,7 +2778,7 @@ window.ABHUSHAN_PRODUCTS = [
         name: 'Sweet Nothing Bracelet',
         price: '₹11,299',
         href: 'product-sweet-nothing.html',
-        img: 'images/_Product%20Cards/prod_bracelet1.png',
+        img: 'images/_Product%20Cards/prod_bracelet1.webp',
         category: 'bracelet'
       },
       {
@@ -2786,7 +2786,7 @@ window.ABHUSHAN_PRODUCTS = [
         name: 'Tomboy Ring',
         price: '₹21,999',
         href: 'product-tomboy-ring.html',
-        img: 'images/_Product%20Cards/prod_ring2.png',
+        img: 'images/_Product%20Cards/prod_ring2.webp',
         category: 'ring'
       }
     ];

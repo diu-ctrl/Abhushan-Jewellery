@@ -52,8 +52,8 @@ On top of that: the mobile menu is nearly unreadable (grey text behind a dark bl
 | H2 | **Hero image has AI-gibberish baked in:** *"Your heritags in cvrry ornernent"* — on the most important visual of the site, prominent on mobile. | images/extras/hero_main.png |
 | H3 | **Duplicate EMI teaser on every PDP** — static accordion `or ₹1,834/month with EMI ⌄` + JS-injected `or ₹1,834/month with EMI ⓘ` stacked back-to-back. Verified visually. | script.js initEMI runs although `.product-emi-container-tiffany` already exists |
 | H4 | **og:image 404** — `images/og-image.jpg` doesn't exist → WhatsApp/Instagram/Facebook shares render blank. JSON-LD also references `images/logo.png` (404) and `images/studio.jpg` (404). | live HTTP probes |
-| H5 | **All 5 PDPs share the homepage `<title>`** "Abhushan – Fine Gold Jewellery \| Ahmedabad, Gujarat, India", the same meta description, canonical `https://abhushan.com`, and a head block containing ALL 5 Product schemas + FAQ schema. No per-product SEO at all. | product-*.html `<head>` |
-| H6 | **Canonical/OG/schema URLs point to `https://abhushan.com`** — a domain not deployed anywhere. Schema `telephone: "+91-79-XXXXXXXX"` is a literal placeholder. | all pages |
+| H5 | **All 5 PDPs share the homepage `<title>`** "Abhushan – Fine Gold Jewellery \| Ahmedabad, Gujarat, India", the same meta description, canonical `https://abhushan-by-divyaraj.vercel.app`, and a head block containing ALL 5 Product schemas + FAQ schema. No per-product SEO at all. | product-*.html `<head>` |
+| H6 | **Canonical/OG/schema URLs point to `https://abhushan-by-divyaraj.vercel.app`** — a domain not deployed anywhere. Schema `telephone: "+91-79-XXXXXXXX"` is a literal placeholder. | all pages |
 | H7 | **NAP data contradicts itself:** visible page: "101 Heritage Arcade, CG Road, Navrangpura, Ahmedabad, Gujarat **380001**, 10 AM–7 PM" vs schema: "101, **Luxury** Arcade … **380009**, 11:00–20:00". Google Local reads the schema. | index.html vs JSON-LD |
 | H8 | **Pinterest + Facebook icons link to `/abhushan_placeholder/` profiles.** Instagram points to your personal `divyraj.creates`. | footer, all pages |
 | H9 | **Popular search pills are dead ends:** "Emerald Rings", "Bridal Sets", "Gold Chains", "Custom Lockets" return **zero results** (5-product catalog has no matching keywords). | script.js `searchCatalog` |
@@ -660,7 +660,7 @@ Browser: submit booking with a real email you control → check inbox (after O1 
 **Strict scope — `<head>` sections + footer social icons only. Do NOT touch any visible body content except the two social icon anchors.**
 
 **Step 1 — index.html `<head>`:**
-- Replace every `https://abhushan.com` with `https://abhushan-by-divyaraj.vercel.app` (canonical, og:url, twitter:url, JSON-LD urls).
+- Replace every `https://abhushan-by-divyaraj.vercel.app` with `https://abhushan-by-divyaraj.vercel.app` (canonical, og:url, twitter:url, JSON-LD urls).
 - Replace `<meta property="og:image" content="images/og-image.jpg" />` and the twitter:image equivalent with:
   ```html
   <meta property="og:image" content="https://abhushan-by-divyaraj.vercel.app/images/og-image.jpg" />
@@ -668,8 +668,8 @@ Browser: submit booking with a real email you control → check inbox (after O1 
   <meta property="og:image:height" content="630" />
   ```
   (If owner input O6 isn't done yet, use `images/extras/hero_main.png` in the content instead — same absolute prefix.)
-- In the **Organization** schema: replace `"logo": "https://abhushan.com/images/logo.png"` with `"logo": "https://abhushan-by-divyaraj.vercel.app/images/favicon.png"`.
-- In the **JewelryStore** schema: delete the `"telephone": "+91-79-XXXXXXXX",` line entirely (better absent than placeholder), replace `"image": "https://abhushan.com/images/studio.jpg"` with `"image": "https://abhushan-by-divyaraj.vercel.app/images/studio_interior.png"`, replace `"streetAddress": "101, Luxury Arcade, CG Road",` with `"streetAddress": "101 Heritage Arcade, CG Road, Navrangpura",`, replace `"postalCode": "380009"` with `"postalCode": "380001"`, and in `openingHoursSpecification` change `"opens": "11:00"` → `"opens": "10:00"` and `"closes": "20:00"` → `"closes": "19:00"` — so the machine-readable data matches what humans read on the page.
+- In the **Organization** schema: replace `"logo": "https://abhushan-by-divyaraj.vercel.app/images/logo.png"` with `"logo": "https://abhushan-by-divyaraj.vercel.app/images/favicon.png"`.
+- In the **JewelryStore** schema: delete the `"telephone": "+91-79-XXXXXXXX",` line entirely (better absent than placeholder), replace `"image": "https://abhushan-by-divyaraj.vercel.app/images/studio.jpg"` with `"image": "https://abhushan-by-divyaraj.vercel.app/images/studio_interior.png"`, replace `"streetAddress": "101, Luxury Arcade, CG Road",` with `"streetAddress": "101 Heritage Arcade, CG Road, Navrangpura",`, replace `"postalCode": "380009"` with `"postalCode": "380001"`, and in `openingHoursSpecification` change `"opens": "11:00"` → `"opens": "10:00"` and `"closes": "20:00"` → `"closes": "19:00"` — so the machine-readable data matches what humans read on the page.
 - In each of the **5 Product** schemas: set `"url"` to the real product page, e.g. `"url": "https://abhushan-by-divyaraj.vercel.app/product-threadbare-ring.html"`, and prefix each `"image"` with `https://abhushan-by-divyaraj.vercel.app/`.
 
 **Step 2 — Each of the 5 product pages gets its own head.** All five currently ship the homepage head (homepage title, homepage description, 5 Product schemas + FAQPage). Replace the whole `<head>` content between the `<meta charset>` line and `</head>` with this template, filling the `{{PLACEHOLDERS}}` from the table below:
