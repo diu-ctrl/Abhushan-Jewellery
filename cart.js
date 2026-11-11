@@ -9,11 +9,10 @@
     CURRENCY: '₹',
     FREE_SHIP: 10000,
     SHIP_FEE: 199,
-    /* PHASE 5 — cloud order storage (Google Sheets via Apps Script).
-       Divyaraj pastes the Web App URL + key here after STEP A0.
-       Until then everything works exactly as before (email + local record). */
-    CLOUD_ENDPOINT: 'https://script.google.com/macros/s/AKfycbwVRr6rSiNdVNXSGa1lgxXxqiMLBkDz_h9N0sVpSOJygLw-zf85udMTKNr7aaCY4Wi7/exec',
-    CLOUD_KEY: 'AbhushanStudio_2026'
+    /* P1 — cloud order storage goes through the first-party proxy
+       /api/cloud-post. The Apps Script URL + key live server-side
+       (Vercel env vars) and are never shipped to the browser. */
+    CLOUD_ENDPOINT: '/api/cloud-post'
   };
   var KEY = 'abhushan_cart_v1';
   var PRODUCTS = {
@@ -248,8 +247,7 @@
   var QUEUE_KEY = 'abhushan_order_queue_v1';
 
   function cloudConfigured() {
-    return CONFIG.CLOUD_ENDPOINT.indexOf('https://script.google') === 0
-      && CONFIG.CLOUD_KEY && CONFIG.CLOUD_KEY.indexOf('PASTE_') !== 0;
+    return CONFIG.CLOUD_ENDPOINT.indexOf('/api/') === 0;
   }
 
   /* text/plain content-type on purpose: a JSON content-type would trigger a
@@ -257,7 +255,7 @@
      request", no preflight, Apps Script parses e.postData.contents fine. */
   function cloudPost(payload) {
     if (!cloudConfigured()) return Promise.reject(new Error('cloud-not-configured'));
-    payload.key = CONFIG.CLOUD_KEY;
+    delete payload.key; // P1: the client never supplies the cloud key
     return fetch(CONFIG.CLOUD_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="title" content="Abhushan Admin Dashboard" />
   <meta name="description" content="Secure administrative panel to review and manage customer jewelry design appointments." />
+  <meta name="robots" content="noindex,nofollow" />
   <title>Abhushan – Admin Appointment Portal</title>
   
   <!-- Google Fonts -->
@@ -839,22 +840,7 @@
 </head>
 <body>
 
-  <!-- AUTHENTICATION FORM SCREEN -->
-  <div class="auth-wrapper" id="auth-wrapper">
-    <div class="auth-card">
-      <div class="auth-logo">Abhushan</div>
-      <h2 class="auth-title">Admin Dashboard</h2>
-      <p class="auth-subtitle">Verify your identity with the admin password to access the appointments records database.</p>
-      
-      <form id="admin-login-form">
-        <input type="password" id="admin-password-input" class="auth-input" placeholder="Password" required />
-        <div class="auth-error" id="auth-error"></div>
-        <button type="submit" class="auth-btn">Authorize Access</button>
-      </form>
-      
-      <a href="index.html" class="auth-back-link">Return to Shop Website</a>
-    </div>
-  </div>
+  <!-- P1: client-side auth screen removed — Edge Middleware Basic-Auth protects this page. -->
 
   <!-- MAIN ADMIN DASHBOARD WRAPPER -->
   <div class="dashboard-wrapper" id="dashboard-wrapper">
@@ -1034,12 +1020,6 @@
       let activeConfirmAction = null;
 
       // DOM Elements
-      const authWrapper = document.getElementById('auth-wrapper');
-      const authCard = document.querySelector('.auth-card');
-      const loginForm = document.getElementById('admin-login-form');
-      const passwordInput = document.getElementById('admin-password-input');
-      const authError = document.getElementById('auth-error');
-
       const dashboardWrapper = document.getElementById('dashboard-wrapper');
       const tableBody = document.getElementById('table-body');
       const emptyState = document.getElementById('empty-state');
@@ -1071,46 +1051,17 @@
          AUTHENTICATION CONTROL GATE
          ========================================== */
       function checkAuth() {
-        if (sessionStorage.getItem('abhushan_admin_authenticated') === 'true') {
-          showDashboard();
-        } else {
-          showAuth();
-        }
-      }
-
-      function showAuth() {
-        dashboardWrapper.style.display = 'none';
-        authWrapper.classList.add('active');
-        passwordInput.value = '';
-        authError.textContent = '';
-        passwordInput.focus();
+        /* P1: auth is enforced by Edge Middleware (Basic-Auth) before this
+           page even loads. The dashboard boots unconditionally. */
+        showDashboard();
       }
 
       function showDashboard() {
-        authWrapper.classList.remove('active');
         dashboardWrapper.style.display = 'block';
         loadAppointments();
         renderDashboard();
       }
 
-      if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const enteredPassword = passwordInput.value.trim();
-          
-          if (enteredPassword === 'admin123' || enteredPassword === 'abhushan2026') {
-            sessionStorage.setItem('abhushan_admin_authenticated', 'true');
-            showToast('Authorization successful. Welcoming Admin... ');
-            setTimeout(() => {
-              showDashboard();
-            }, 500);
-          } else {
-            authError.textContent = 'Incorrect passcode. Please try again.';
-            passwordInput.value = '';
-            passwordInput.focus();
-          }
-        });
-      }
 
       /* ==========================================
          DATA PERSISTENCE & PARSING
@@ -1518,19 +1469,15 @@
       /* ===== PHASE 4 — ORDERS TAB ===== */
       const ORDERS_KEY = 'abhushan_orders_v1';
 
-      /* ===== PHASE 5 — CLOUD ORDERS (Google Sheets) =====
-         Must match cart.js CONFIG.CLOUD_ENDPOINT / CLOUD_KEY.
-         Divyaraj pastes the real values in STEP A4-final. */
-      const CLOUD_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwVRr6rSiNdVNXSGa1lgxXxqiMLBkDz_h9N0sVpSOJygLw-zf85udMTKNr7aaCY4Wi7/exec';
-      const CLOUD_KEY = 'AbhushanStudio_2026';
-      const CLOUD_READY = CLOUD_ENDPOINT.indexOf('https://script.google') === 0
-        && CLOUD_KEY.indexOf('PASTE_') !== 0;
+      /* P1: the Apps Script URL + key are no longer shipped to the client.
+         Reads go through /api/admin-data (Edge-protected; the secret is
+         injected server-side from a dedicated Vercel env var). */
+      const CLOUD_READY = true;
 
       /* POST helper — text/plain avoids the CORS preflight Apps Script can't answer */
       function adminCloudPost(payload) {
         if (!CLOUD_READY) return Promise.reject(new Error('cloud-not-configured'));
-        payload.key = CLOUD_KEY;
-        return fetch(CLOUD_ENDPOINT, {
+        return fetch('/api/cloud-post', {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
@@ -1543,7 +1490,7 @@
       function cloudFetch(action) {
         cloudLastError = '';
         if (!CLOUD_READY) { cloudLastError = 'not-configured'; return Promise.resolve([]); }
-        return fetch(CLOUD_ENDPOINT + '?action=' + action + '&key=' + encodeURIComponent(CLOUD_KEY), { cache: 'no-store' })
+        return fetch('/api/admin-data?action=' + encodeURIComponent(action), { cache: 'no-store' })
           .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
           .then(j => (j && j.ok && Array.isArray(j[action])) ? j[action] : [])
           .catch(err => {

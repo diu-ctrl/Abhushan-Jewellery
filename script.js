@@ -578,148 +578,18 @@ window.ABHUSHAN_PRODUCTS = [
     bookingDateInput.setAttribute('min', today);
   }
 
-  const bookingForm = document.getElementById('booking-form');
-  if (bookingForm) {
-    bookingForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      // PHASE 3 — deliver booking to the studio inbox (Web3Forms), graceful on failure
-      (function () {
-        var fd = {};
-        Array.prototype.forEach.call(bookingForm.elements, function (el) {
-          if (el.name && el.type !== 'submit' && el.type !== 'button') fd[el.name] = el.value;
-        });
-        fd.access_key = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
-        fd.subject = 'Abhushan — Welding Session Booking';
-        fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(fd)
-        }).catch(function () {
-          try {
-            var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
-            fd._savedAt = new Date().toISOString();
-            fd._form = 'booking';
-            store.push(fd);
-            localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
-          } catch (err) {}
-        });
-      })();
-
-      
-      const name = document.getElementById('booking-name').value;
-      const email = document.getElementById('booking-email').value;
-      const phone = document.getElementById('booking-phone').value;
-      const date = document.getElementById('booking-date').value;
-      const time = document.getElementById('booking-time').value;
-      const service = document.getElementById('booking-service').value;
-      const notes = document.getElementById('booking-notes').value || '';
-      
-      // Generate unique booking reference ID e.g., AB-1943
-      const randNum = Math.floor(1000 + Math.random() * 9000);
-      const bookingId = 'AB-' + randNum;
-      
-      // Store in localStorage
-      const newBooking = {
-        id: bookingId,
-        name: name,
-        email: email,
-        phone: phone,
-        date: date,
-        time: time,
-        service: service,
-        notes: notes,
-        status: 'Pending',
-        created_at: new Date().toISOString()
-      };
-      
-      let appointments = [];
-      try {
-        const existing = localStorage.getItem('abhushan_appointments');
-        if (existing) {
-          appointments = JSON.parse(existing);
-        }
-      } catch (err) {
-        console.error('Error reading localStorage appointments:', err);
-      }
-      
-      appointments.push(newBooking);
-      localStorage.setItem('abhushan_appointments', JSON.stringify(appointments));
-      if (window.AbhushanNotify) {
-        window.AbhushanNotify.send('Studio booking ' + bookingId + ' — ' + service, {
-          booking_id: bookingId, name: name, email: email, phone: phone,
-          date: date, time: time, service: service, notes: notes
-        }, email);
-      }
-      /* PHASE 5 — cloud record so the appointment shows in the Admin Portal on ANY device */
-      if (window.AbhushanCart && window.AbhushanCart.cloudPost) {
-        window.AbhushanCart.cloudPost({ action: 'appointment', appointment: newBooking })
-          .catch(function () { /* email (above) remains the backup */ });
-      }
-      
-      // Show confirmation toast
-      showToast(`Success! Booking ${bookingId} requested. We will contact you soon.`);
-      
-      // Reset form
-      bookingForm.reset();
-      if (bookingDateInput) {
-        bookingDateInput.value = '';
-      }
-    });
-  }
 
   /* ============================================================
-     ADMIN PORTAL PASSCODE MODAL & AUTHENTICATION
+     ADMIN ACCESS (P1) — /admin.html is protected by Edge
+     Middleware Basic-Auth (Vercel env vars ADMIN_USER / ADMIN_PASS).
+     No client-side passcodes exist anymore. The footer "©" simply
+     navigates to the admin page, where the browser asks for creds.
      ============================================================ */
   const adminTrigger = document.getElementById('admin-trigger');
-  const adminModal = document.getElementById('admin-modal-overlay');
-  const adminModalClose = document.getElementById('admin-modal-close');
-  const adminLoginForm = document.getElementById('admin-login-form');
-  const adminPasswordInput = document.getElementById('admin-password-input');
-  const adminLoginError = document.getElementById('admin-login-error');
-
-  if (adminTrigger && adminModal) {
+  if (adminTrigger) {
     adminTrigger.addEventListener('click', (e) => {
       e.preventDefault();
-      adminModal.classList.add('active');
-      adminPasswordInput.value = '';
-      adminLoginError.textContent = '';
-      setTimeout(() => adminPasswordInput.focus(), 150);
-    });
-  }
-
-  if (adminModalClose && adminModal) {
-    adminModalClose.addEventListener('click', () => {
-      adminModal.classList.remove('active');
-    });
-  }
-
-  // Close modal if clicked outside
-  if (adminModal) {
-    adminModal.addEventListener('click', (e) => {
-      if (e.target === adminModal) {
-        adminModal.classList.remove('active');
-      }
-    });
-  }
-
-  if (adminLoginForm) {
-    adminLoginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const enteredPassword = adminPasswordInput.value.trim();
-      
-      // Validate password (both 'admin123' and 'abhushan2026' are accepted)
-      if (enteredPassword === 'admin123' || enteredPassword === 'abhushan2026') {
-        sessionStorage.setItem('abhushan_admin_authenticated', 'true');
-        adminModal.classList.remove('active');
-        showToast('Authentication successful. Redirecting...');
-        setTimeout(() => {
-          window.location.href = 'admin.html';
-        }, 800);
-      } else {
-        adminLoginError.textContent = 'Incorrect passcode. Please try again.';
-        adminPasswordInput.value = '';
-        adminPasswordInput.focus();
-      }
+      window.location.href = 'admin.html';
     });
   }
 
@@ -1907,54 +1777,115 @@ window.ABHUSHAN_PRODUCTS = [
         checkVal(input);
       });
 
-      // 4. Booking Form Submit Loading Spinner & Success State
+      // 4. Booking Form Submit — SINGLE handler (AB-P1-MERGED-BOOKING)
+      /* P1 merge: exactly ONE web3forms POST per submit. Also stores the
+         localStorage appointment record, fires the notify widget and the
+         cloud sync that used to live in the duplicate handler (removed). */
       bookingForm.addEventListener('submit', (e) => {
         e.preventDefault();
-      // PHASE 3 — deliver booking to the studio inbox (Web3Forms), graceful on failure
-      (function () {
-        var fd = {};
-        Array.prototype.forEach.call(bookingForm.elements, function (el) {
-          if (el.name && el.type !== 'submit' && el.type !== 'button') fd[el.name] = el.value;
-        });
-        fd.access_key = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
-        fd.subject = 'Abhushan — Welding Session Booking';
-        fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify(fd)
-        }).catch(function () {
-          try {
-            var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
-            fd._savedAt = new Date().toISOString();
-            fd._form = 'booking';
-            store.push(fd);
-            localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
-          } catch (err) {}
-        });
-      })();
 
-        
         const submitBtn = document.getElementById('booking-submit-btn');
-        if (!submitBtn) return;
-        
-        const originalHtml = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-icon"></span> Processing...';
-        
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<span class="spinner-icon"></span> Processing...';
+        }
+
+        // Honeypot (P1): bots that tick the hidden box get a fake success —
+        // nothing is emailed, stored or synced.
+        const hp = bookingForm.querySelector('input[name="botcheck"]');
+        if (hp && hp.checked) {
+          bookingForm.reset();
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '&#10003; Confirmed';
+          }
+          return;
+        }
+
+        // PHASE 3 — deliver booking to the studio inbox (Web3Forms), graceful on failure
+        (function () {
+          var fd = {};
+          Array.prototype.forEach.call(bookingForm.elements, function (el) {
+            if (!el.name || el.type === 'submit' || el.type === 'button') return;
+            if (el.type === 'checkbox' && !el.checked) return; // unchecked honeypot must not serialize as "on"
+            fd[el.name] = el.value;
+          });
+          fd.access_key = '10c7b958-4d2a-411b-ab73-fb254ad36c34';
+          fd.subject = 'Abhushan — Welding Session Booking';
+          fetch('https://api.web3forms.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(fd)
+          }).catch(function () {
+            try {
+              var store = JSON.parse(localStorage.getItem('abhushan_form_fallback') || '[]');
+              fd._savedAt = new Date().toISOString();
+              fd._form = 'booking';
+              store.push(fd);
+              localStorage.setItem('abhushan_form_fallback', JSON.stringify(store));
+            } catch (err) {}
+          });
+        })();
+
+        const name = document.getElementById('booking-name').value;
+        const email = document.getElementById('booking-email').value;
+        const phone = document.getElementById('booking-phone').value;
+        const date = document.getElementById('booking-date').value;
+        const time = document.getElementById('booking-time').value;
+        const service = document.getElementById('booking-service').value;
+        const notes = document.getElementById('booking-notes').value || '';
+
+        // Generate unique booking reference ID e.g., AB-1943
+        const randNum = Math.floor(1000 + Math.random() * 9000);
+        const bookingId = 'AB-' + randNum;
+
+        const newBooking = {
+          id: bookingId, name: name, email: email, phone: phone,
+          date: date, time: time, service: service, notes: notes,
+          status: 'Pending', created_at: new Date().toISOString()
+        };
+
+        let appointments = [];
+        try {
+          const existing = localStorage.getItem('abhushan_appointments');
+          if (existing) appointments = JSON.parse(existing);
+        } catch (err) {
+          console.error('Error reading localStorage appointments:', err);
+        }
+        appointments.push(newBooking);
+        localStorage.setItem('abhushan_appointments', JSON.stringify(appointments));
+
+        if (window.AbhushanNotify) {
+          window.AbhushanNotify.send('Studio booking ' + bookingId + ' — ' + service, {
+            booking_id: bookingId, name: name, email: email, phone: phone,
+            date: date, time: time, service: service, notes: notes
+          }, email);
+        }
+        /* PHASE 5 — cloud record so the appointment shows in the Admin Portal on ANY device */
+        if (window.AbhushanCart && window.AbhushanCart.cloudPost) {
+          window.AbhushanCart.cloudPost({ action: 'appointment', appointment: newBooking })
+            .catch(function () { /* email (above) remains the backup */ });
+        }
+
+        showToast(`Success! Booking ${bookingId} requested. We will contact you soon.`);
+
+        // Reset form
+        bookingForm.reset();
+        const bookingDateInput = document.getElementById('booking-date');
+        if (bookingDateInput) bookingDateInput.value = '';
+
+        // Success state UI (kept from the former second handler)
         setTimeout(() => {
-          submitBtn.innerHTML = '&#10003; Confirmed';
-          submitBtn.style.backgroundColor = '#4caf50';
-          submitBtn.style.borderColor = '#4caf50';
-          
+          if (submitBtn) {
+            submitBtn.innerHTML = '&#10003; Confirmed';
+            submitBtn.style.backgroundColor = '#4caf50';
+            submitBtn.style.borderColor = '#4caf50';
+          }
           setTimeout(() => {
-            // Fade out form and fade in success message
             bookingForm.style.transition = 'opacity 0.4s ease';
             bookingForm.style.opacity = '0';
-            
             setTimeout(() => {
               bookingForm.style.display = 'none';
-              
-              // Create success message element
               const successMsg = document.createElement('div');
               successMsg.className = 'booking-success-message';
               successMsg.style.display = 'block';
@@ -1965,11 +1896,8 @@ window.ABHUSHAN_PRODUCTS = [
                 <p>Your appointment request has been received.</p>
                 <p style="font-size: 14px; color: var(--color-text-light); margin-top: 5px;">We'll confirm within 2 hours.</p>
               `;
-              
               const bookingCard = bookingForm.closest('.booking-card');
-              if (bookingCard) {
-                bookingCard.appendChild(successMsg);
-              }
+              if (bookingCard) bookingCard.appendChild(successMsg);
             }, 400);
           }, 800);
         }, 1200);
