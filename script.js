@@ -539,6 +539,8 @@ window.ABHUSHAN_PRODUCTS = [
 
     const toast = document.createElement('div');
     toast.className = 'abhushan-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     toast.textContent = msg;
     toast.style.cssText = `
       position: fixed;
