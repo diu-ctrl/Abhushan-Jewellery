@@ -1,19 +1,13 @@
-# ABHUSHAN P4 PACKAGE MANIFEST
-# Generated: 2026-11-11 (UTC)
-# Base: live production bytes 2026-11-11 (P3 state) + surgical fixes F1-F5
-# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (run inside the package dir)
-# Note: the manifest does not list itself (keeps sha256sum -c clean)
+# ABHUSHAN P4.1 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC)
+# Base: post-P4 live production bytes + search-label hotfix on 5 product pages
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
+# The manifest does not list itself
 #
-95071f3a36e75d12542eacbe9a3b1fdcd8881f73326c56d5b0aabb5fc5f4f2b6  7462  ABHUSHAN-P4-PROMPT.md
-9aaae2536491132a84aace233680f5946bdbea03f853e78501b8f16c7a7333ac  11032  cart.css
-5ed19f25601e11fe877fdb37f9222837ccc94cb4dcd3d59421cfc330be763fa3  29232  collection.html
-366680647cdb6d12ba0653542b1f141bb41d7f40450859612ea34b51780a4365  71745  home.html
-aeef6fae848d7a6a4414da752a4bf8d24992c7adfccac5f23daf54600b7e0421  43941  product-greco-lariat.html
-a6001986e63ab0c54a42f5b0c6b97d30397c46995d7881f7b47d418cdc90063d  43827  product-hammered-hoop.html
-bf3bb5a506466d365b61d02fee4fb48b4306bf6322a2d4227ce16ca33f0bcfb6  44809  product-sweet-nothing.html
-0e732e1328f96175da80a9b0c0f663b27935c6cb279f934c260a0c0c03b350fd  44918  product-threadbare-ring.html
-3afb88c8992eb1f153f8e9f52bfb715a340a94a0d394628c8a18fd2237f2cf89  44673  product-tomboy-ring.html
-4f0337082730546235bfe9d0f281b6ceb64866ae40e5d3e442fdb0927273dd32  119096  script.js
-16e7f560b83fb6ce2def996f822a4f24f613d88fcf80ea8456f1140f3acfda3b  28742  story.html
-c5dc6bc0ab619e29c330c6196a810078badb19a8ac1685cbb42795e35848cf01  193443  styles.css
-7cc0401868d65cf3e6bd65d20d9324a3dc3da89ad4a3afea7dc377f2d9777393  4978  test_p4.js
+b141ccdecb69acccbb6e560f988b9fb9032f71f180bd6b729039b78ad230de4e  1803  ABHUSHAN-P41-PROMPT.md
+142120830806f37564b7ecaad2adc5c76fbb3571e92cddbb5e1e3ba2eb9cf5ce  43971  product-greco-lariat.html
+bb61a93e43aaa70130c3bc027d3dc209cfeb69836979f6844e207226f1edd1ec  43857  product-hammered-hoop.html
+2a6519603f76ba95e26be5ccd480c85e42a78f7c9fb7812c936bbd63ec95c691  44839  product-sweet-nothing.html
+6c0692874ab3c485190ba8266709bd6aabec4860f974401a171a831024da32e1  44948  product-threadbare-ring.html
+30dddfce900843e9fc88e03efa4fdca0e4106bcdc1c5553916eacb737eb6535d  44703  product-tomboy-ring.html
+52f2bca774ea3d80428a720f492927792928951beeeae423384ee29a625afdcc  1655  test_p4b.js
