@@ -1,0 +1,18 @@
+# ABHUSHAN P3 PACKAGE MANIFEST
+# Generated: 2026-11-11 14:07 UTC
+# Base: live production bytes 2026-11-11 + surgical fixes F1-F4
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (run inside the package dir)
+#
+e902dd431dd3f5c32cbf9f5ae2ee1db7138f01dff599412381e57ab5c7ba5019  8027  ABHUSHAN-P3-PROMPT.md
+5d8139fde2f17d4e01c7a51001c1db0e9ca0448e3786bc8a6004bd2d84827c69  299  PACKAGE-MANIFEST.txt
+242e84e18d86b30b5d87180c386fc5430567eccccce62543074d76157c6b3915  3950  test_p3.js
+9e42de9e321d658610d554718ba0d1c490c1f022a7c26294bfc69b63359a9e40  1622  sitemap.xml
+2124bc621080c78307d652ff27a243960d7293a6df031a7ef612e82f32b84540  119007  script.js
+cf2db8c2f9e643e9f7e85b90d29415b45dcb44e40b8c61e6034fe2de7976da86  5679  api/cloud-post.js
+bf23f07d0e5aa01941fd3823dee6a081dd7c3fa5601e54194a152ec5b76f8bad  29202  collection.html
+802bc00650a8e58f7e367280bbaa68f77634914605e22d99056b997a6d62014a  28712  story.html
+2f3e3fe65d742a71d7fbeb311b95151b97a5c0887a49c4440138adcab6a4c037  44858  product-threadbare-ring.html
+5b2dd8438f5d492c48b2062dc22d32f7756581c133b75fb81671fecc4282303e  44613  product-tomboy-ring.html
+718684451717bef1c9d562dab8ea7901723e7126fb0177fc218fff71e45e9d3b  43767  product-hammered-hoop.html
+e4edc9fae0aaa79aaa76bb9108fda9f988f3db03df1f702d7017d74e776a5331  43881  product-greco-lariat.html
+bc4f55fc7a2e6d9cd995096d3ca359dbf7870bdf68cad05c9047074f7cd0f41e  44749  product-sweet-nothing.html
