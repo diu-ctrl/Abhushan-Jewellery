@@ -1,0 +1,7 @@
+# Abhushan — Fine Gold Jewellery (Ahmedabad)
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /api/
+
+Sitemap: https://abhushan-by-divyaraj.vercel.app/sitemap.xml
