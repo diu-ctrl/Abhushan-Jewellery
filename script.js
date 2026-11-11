@@ -1703,7 +1703,10 @@ window.ABHUSHAN_PRODUCTS = [
     injectChatWidget();
     injectSearchWidget();
     initMicroInteractions();
-    initWishlist();
+    // P6 G-C fix: initWishlist() call removed. The wishlist manager is
+    // a self-invoked IIFE (name not in scope); this bare call threw
+    // ReferenceError on every page load and aborted initApp, so
+    // initVirtualTryOn (TRY IT ON) and initNewsletterPopup never ran.
     initVirtualTryOn();
     initNewsletterPopup();
   }
@@ -3366,4 +3369,80 @@ window.ABHUSHAN_PRODUCTS = [
   }
 
   
+})();
+
+
+/* ============================================================
+   AB-P6-MOTION v1 — Motion & Life (verifier build 2026-11-12)
+   G-A lazy-image fade-in / G-B back-to-top progress ring.
+   (G-C, the initApp crash fix, is applied inside the function
+   body above this block.)
+   Progressive enhancement: classes and elements are added by JS
+   only, so users without JS never see hidden content. Everything
+   here is skipped when prefers-reduced-motion is set.
+   ============================================================ */
+(function () {
+  'use strict';
+  var reduce = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* AB-P6-LAZYFADE - lazy images fade in on load.
+     complete-check covers cached images; a 4s safety timer makes
+     sure no image can ever stay hidden (broken src etc.). */
+  if (!reduce) {
+    var lazyImgs = document.querySelectorAll('img[loading="lazy"]');
+    Array.prototype.forEach.call(lazyImgs, function (img) {
+      if (img.classList.contains('lz-in')) return;
+      var show = function () { img.classList.add('lz-in'); };
+      if (img.complete && img.naturalWidth > 0) {
+        img.classList.add('lz');
+        show();
+        return;
+      }
+      img.classList.add('lz');
+      img.addEventListener('load', show, { once: true });
+      img.addEventListener('error', show, { once: true });
+      window.setTimeout(show, 4000);
+    });
+  }
+
+  /* AB-P6-BTT - back-to-top button with gold scroll-progress ring.
+     Appears after roughly one viewport of scroll; rAF-throttled;
+     keyboard accessible; instant jump for reduced-motion users. */
+  if (!document.getElementById('ab-btt')) {
+    var btt = document.createElement('button');
+    btt.id = 'ab-btt';
+    btt.type = 'button';
+    btt.setAttribute('aria-label', 'Back to top');
+    btt.setAttribute('title', 'Back to top');
+    btt.innerHTML =
+      '<svg viewBox="0 0 52 52" aria-hidden="true" focusable="false">' +
+      '<circle class="ab-btt-ring" cx="26" cy="26" r="22" stroke-width="2.5" ' +
+      'stroke-linecap="round" transform="rotate(-90 26 26)"></circle>' +
+      '<path class="ab-btt-arrow" d="M26 34 L26 19 M19.5 25.5 L26 19 L32.5 25.5" ' +
+      'stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>' +
+      '</svg>';
+    document.body.appendChild(btt);
+    var CIRC = 2 * Math.PI * 22;
+    var ring = btt.querySelector('.ab-btt-ring');
+    ring.style.strokeDasharray = String(CIRC);
+    ring.style.strokeDashoffset = String(CIRC);
+    var ticking = false;
+    var updateBtt = function () {
+      ticking = false;
+      var y = window.scrollY || document.documentElement.scrollTop || 0;
+      var max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      var p = Math.min(1, y / max);
+      ring.style.strokeDashoffset = String(CIRC * (1 - p));
+      if (y > window.innerHeight * 0.9) { btt.classList.add('show'); }
+      else { btt.classList.remove('show'); }
+    };
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(updateBtt); }
+    }, { passive: true });
+    updateBtt();
+    btt.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
 })();

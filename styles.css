@@ -8170,3 +8170,90 @@ html, body { overflow-x: hidden; overflow-x: clip; }
     transition: color var(--dur) var(--ease);
   }
 }
+
+
+/* ============================================================
+   AB-P6-MOTION v1 — Motion & Life (verifier build 2026-11-12)
+   Adds: lazy-image fade-in (classes applied by JS only, so no-JS
+   users always see images) and a back-to-top button with a gold
+   scroll-progress ring. Both fully guarded for
+   prefers-reduced-motion. Nothing existing is overridden.
+   ============================================================ */
+
+/* P6-1 lazy images fade in when loaded (JS adds .lz, then .lz-in) */
+img.lz {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+}
+img.lz.lz-in {
+  opacity: 1;
+}
+
+/* P6-2 back-to-top with gold progress ring (sits above chat bubble) */
+#ab-btt {
+  position: fixed;
+  right: 26px;
+  bottom: 106px;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg);
+  box-shadow: 0 6px 20px rgba(50, 35, 37, 0.22);
+  cursor: pointer;
+  z-index: 990;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s linear var(--dur);
+}
+#ab-btt.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s;
+}
+#ab-btt svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#ab-btt .ab-btt-ring {
+  fill: none;
+  stroke: var(--color-gold);
+  transition: stroke-dashoffset 0.15s linear;
+}
+#ab-btt .ab-btt-arrow {
+  fill: none;
+  stroke: var(--color-text);
+}
+#ab-btt:hover {
+  box-shadow: 0 10px 28px rgba(50, 35, 37, 0.30);
+}
+#ab-btt:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+@media (max-width: 768px) {
+  #ab-btt {
+    right: 18px;
+    bottom: 98px;
+    width: 46px;
+    height: 46px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  img.lz {
+    opacity: 1;
+    transition: none;
+  }
+  #ab-btt,
+  #ab-btt.show {
+    transition: none;
+    transform: none;
+  }
+  #ab-btt .ab-btt-ring {
+    transition: none;
+  }
+}
