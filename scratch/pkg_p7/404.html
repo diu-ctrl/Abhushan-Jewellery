@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#110F0C" />
+  <meta name="robots" content="noindex, follow" />
+  <title>Page Not Found — Abhushan</title>
+  <meta name="description" content="The page you are looking for has wandered off. Explore Abhushan fine gold jewellery — handcrafted in Ahmedabad." />
+  <style>
+    :root { --gold: #C9A96E; --char: #110F0C; --cream: #F4EFE5; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: var(--char); color: var(--cream); text-align: center;
+      font-family: Georgia, 'Times New Roman', serif; padding: 24px;
+    }
+    .frame { border: 1px solid var(--gold); padding: 64px 48px; max-width: 640px; position: relative; }
+    .frame::before {
+      content: ""; position: absolute; inset: 10px; border: 1px solid rgba(201,169,110,.35); pointer-events: none;
+    }
+    .diamond { width: 18px; height: 18px; border: 1.5px solid var(--gold); transform: rotate(45deg); margin: 0 auto 28px; }
+    .diamond::after { content: ""; display: block; width: 7px; height: 7px; border: 1px solid var(--gold); transform: rotate(0deg) translate(4px, 4px); }
+    h1 { font-weight: 400; font-size: 44px; letter-spacing: 4px; margin-bottom: 10px; }
+    .code { color: var(--gold); font-size: 13px; letter-spacing: 6px; margin-bottom: 26px; }
+    p { font-size: 15px; line-height: 1.7; color: rgba(244,239,229,.72); max-width: 420px; margin: 0 auto 34px; }
+    .actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    a.btn {
+      display: inline-block; padding: 13px 30px; font-size: 12px; letter-spacing: 3px;
+      text-transform: uppercase; text-decoration: none; border: 1px solid var(--gold);
+      color: var(--cream); transition: background .25s ease, color .25s ease;
+    }
+    a.btn:hover { background: var(--gold); color: var(--char); }
+    a.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+    a.btn.ghost { border-color: rgba(201,169,110,.4); }
+    footer { margin-top: 34px; font-size: 11px; letter-spacing: 2px; color: rgba(201,169,110,.55); text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <main class="frame">
+    <div class="diamond" aria-hidden="true"></div>
+    <div class="code">ERROR 404</div>
+    <h1>This page has wandered.</h1>
+    <p>Like a fine jewel, every page has its place. The one you seek isn't here — but our studio, our collections, and our goldsmiths are a click away.</p>
+    <nav class="actions">
+      <a class="btn" href="/">Return to the Boutique</a>
+      <a class="btn ghost" href="/collection.html">Browse Collections</a>
+      <a class="btn ghost" href="https://wa.me/919979787087?text=Namaste%20Abhushan%20%E2%80%94%20I%20need%20help%20finding%20something." target="_blank" rel="noopener">WhatsApp the Studio</a>
+    </nav>
+    <footer>Abhushan · Fine Gold Jewellery · Ahmedabad</footer>
+  </main>
+</body>
+</html>

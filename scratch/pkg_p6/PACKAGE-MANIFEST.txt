@@ -1,0 +1,10 @@
+# ABHUSHAN PKG6 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC) by verifier build_pkg56.py
+# Base: live production bytes (recon41, proven == prod by ab_p41_audit.py)
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
+# The manifest does not list itself
+#
+bf5223d4fc2865f7689c6265eea2eedeb267a0a794bf0ba05c5bcd56b3ad81f1  199084  styles.css
+e9e9ed663dccb217c08a6fcf20d40611d91c99be1af68a41e665786b9e60509f  122644  script.js
+edb293e7bfda71f309c335687d5d6d21b3fb4486251b9f223dc229072ea70904  3158  test_p6.js
+a5c21e8193b4e0b06b5a4454deb3689fe4ff35b4ddb70b2a49ead5aacade08d6  3387  ABHUSHAN-P6-PROMPT.md

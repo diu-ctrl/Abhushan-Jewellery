@@ -1,0 +1,13 @@
+# ABHUSHAN P4.1 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC)
+# Base: post-P4 live production bytes + search-label hotfix on 5 product pages
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
+# The manifest does not list itself
+#
+b141ccdecb69acccbb6e560f988b9fb9032f71f180bd6b729039b78ad230de4e  1803  ABHUSHAN-P41-PROMPT.md
+142120830806f37564b7ecaad2adc5c76fbb3571e92cddbb5e1e3ba2eb9cf5ce  43971  product-greco-lariat.html
+bb61a93e43aaa70130c3bc027d3dc209cfeb69836979f6844e207226f1edd1ec  43857  product-hammered-hoop.html
+2a6519603f76ba95e26be5ccd480c85e42a78f7c9fb7812c936bbd63ec95c691  44839  product-sweet-nothing.html
+6c0692874ab3c485190ba8266709bd6aabec4860f974401a171a831024da32e1  44948  product-threadbare-ring.html
+30dddfce900843e9fc88e03efa4fdca0e4106bcdc1c5553916eacb737eb6535d  44703  product-tomboy-ring.html
+52f2bca774ea3d80428a720f492927792928951beeeae423384ee29a625afdcc  1655  test_p4b.js

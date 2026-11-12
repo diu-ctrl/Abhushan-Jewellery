@@ -1,0 +1,11 @@
+# ABHUSHAN PKG8 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC) by verifier build_pkg8.py
+# Base: live production bytes (recon7live, post-P7, drift-checked 2026-11-12)
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
+# The manifest does not list itself
+#
+ee0890ba7ca870e69af340b75f917a246b2bb6f633a01c8a0900fa3686ffd435  144975  styles.css
+cd0c68e8b00355f34e77e8acba08e17b8c25b3f16c73347d1ee7ca31a632e9f3  3306  404.html
+6aa2ba6b42f9e827f969f7545f19906757a6bb89e183a2a71488740f2508f1ea  29279  collection.html
+8b6d0219b4fb9eb21654f610a2d738b33a28c7c76841003f050e56c6f2d0dd99  28807  story.html
+bb5a849b3d316e2cf2084032fac5ec42846d8469ee2f9c057861a55ce98e5cf6  10388  privacy.html

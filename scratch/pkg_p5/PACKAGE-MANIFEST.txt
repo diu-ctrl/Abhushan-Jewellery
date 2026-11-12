@@ -1,0 +1,9 @@
+# ABHUSHAN PKG5 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC) by verifier build_pkg56.py
+# Base: live production bytes (recon41, proven == prod by ab_p41_audit.py)
+# Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
+# The manifest does not list itself
+#
+a29576b1dcab62860fc204274f7a7c47d1d00c01c91a30cec368f50e4f684188  197046  styles.css
+4893991bb59388455ae4b07dc11bd30edfe9cd5bee1a62a790e0ea85191edf09  3035  test_p5.js
+c31c64c793e6d39b71f058e27b353716755bf23e52c2038a79e753319aa73eba  2591  ABHUSHAN-P5-PROMPT.md
