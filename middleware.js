@@ -77,5 +77,5 @@ export default function middleware(req) {
 }
 
 export const config = {
-  matcher: ['/admin.html', '/api/admin-data']
+  matcher: ['/admin', '/admin.html', '/api/admin-data']
 };

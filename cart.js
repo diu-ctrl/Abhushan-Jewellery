@@ -201,7 +201,7 @@
       + '<div class="bag-ship-bar"><span style="width:' + shipPct + '%"></span></div></div>';
     var emi = n === 0 ? '' : '<p class="bag-emi">or ' + inr(sub/12) + '/month with 12-month EMI at 0% interest</p>';
     var body = n === 0
-      ? '<div class="bag-empty"><p class="bag-empty-title">Your bag is empty.</p><p class="bag-empty-sub">Solid gold, handcrafted in Ahmedabad, made to be worn every day.</p><a class="bag-cta bag-cta-secondary" href="index.html#section-products">Explore Collections</a></div>'
+      ? '<div class="bag-empty"><p class="bag-empty-title">Your bag is empty.</p><p class="bag-empty-sub">Solid gold, handcrafted in Ahmedabad, made to be worn every day.</p><a class="bag-cta bag-cta-secondary" href="/#section-products">Explore Collections</a></div>'
       : '<div class="bag-list">' + rows + '</div>'
         + shipBlock + emi
         + '<div class="bag-subtotal"><span>Subtotal</span><strong>' + inr(sub) + '</strong></div>'

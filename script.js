@@ -690,7 +690,7 @@ window.ABHUSHAN_PRODUCTS = [
         }
       } else {
         e.preventDefault();
-        window.location.href = 'index.html';
+        window.location.href = '/';
       }
     });
   }
@@ -1085,7 +1085,7 @@ window.ABHUSHAN_PRODUCTS = [
       if (panel) panel.classList.remove('open');
       localStorage.setItem('abhushan_chat_open', 'false');
     } else {
-      window.location.href = 'index.html' + selector;
+      window.location.href = '/' + selector;
     }
   };
 
@@ -2967,6 +2967,7 @@ window.ABHUSHAN_PRODUCTS = [
     // ── Inject wishlist heart on PDP pages
     function injectPDPHeart() {
       var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+      if (pagePath && !pagePath.endsWith('.html')) pagePath += '.html';
       var product = PDP_MAP[pagePath];
       if (!product) return;
 
@@ -3029,7 +3030,7 @@ window.ABHUSHAN_PRODUCTS = [
         '<div class="wl-drawer-footer">' +
           '<p class="wl-count-line">' + wishlist.length + ' item' + (wishlist.length !== 1 ? 's' : '') + ' saved</p>' +
           '<button type="button" class="wl-move-all-btn" id="wl-move-all">Move All to Bag</button>' +
-          '<a href="index.html#section-products" class="wl-continue-link">Continue Shopping</a>' +
+          '<a href="/#section-products" class="wl-continue-link">Continue Shopping</a>' +
         '</div>'
       ) : '';
 
@@ -3040,7 +3041,7 @@ window.ABHUSHAN_PRODUCTS = [
             '<div class="wl-empty-icon">' + HEART_SVG.replace('viewBox', 'width="56" height="56" viewBox') + '</div>' +
             '<p class="wl-empty-title">Your wishlist is empty.</p>' +
             '<p class="wl-empty-sub">Explore our collections and save the pieces that speak to you.</p>' +
-            '<a href="index.html#section-products" class="wl-empty-cta">Explore Collections</a>' +
+            '<a href="/#section-products" class="wl-empty-cta">Explore Collections</a>' +
           '</div>'
         );
       } else {
@@ -3157,6 +3158,7 @@ window.ABHUSHAN_PRODUCTS = [
       var pdpBtn = document.getElementById('pdp-wishlist-btn');
       if (!pdpBtn) return;
       var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+      if (pagePath && !pagePath.endsWith('.html')) pagePath += '.html';
       var product = PDP_MAP[pagePath];
       if (!product) return;
       pdpBtn.classList.toggle('active', isWishlisted(product.id));
