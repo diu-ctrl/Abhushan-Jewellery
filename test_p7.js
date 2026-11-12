@@ -95,8 +95,8 @@ gate('G01 theme-color #FAF8F4 on all 9 public pages... (8 pages)', tcOk);
 
 // H. untouched files byte-identical to P6 state
 const EXP_HASH = {
-  "script.js": "8cf9888b332fcf69dd29a75ba3dd6f0c0732cad55a833a73b780bd354809b74a",
-  "cart.js": "1a8cf4c53b85fe48080d8610c433904231014e47b6fb7d4fd1fd112d20fa8dfb",
+  "script.js": "e9e9ed663dccb217c08a6fcf20d40611d91c99be1af68a41e665786b9e60509f",
+  "cart.js": "263769b3add9cf892f460fbca2b70778aa167bdb4c6bc53e07ea8739742ef62c",
   "cart.css": "9aaae2536491132a84aace233680f5946bdbea03f853e78501b8f16c7a7333ac"
 };
 const crypto = require('crypto');

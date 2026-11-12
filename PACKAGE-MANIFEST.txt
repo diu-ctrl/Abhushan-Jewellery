@@ -1,19 +1,11 @@
-# ABHUSHAN PKG7 PACKAGE MANIFEST
-# Generated: 2026-11-12 (UTC) by verifier build_pkg7.py
-# Base: live production bytes (recon56, post-P6, drift-checked 2026-11-12)
+# ABHUSHAN PKG8 PACKAGE MANIFEST
+# Generated: 2026-11-12 (UTC) by verifier build_pkg8.py
+# Base: live production bytes (recon7live, post-P7, drift-checked 2026-11-12)
 # Verify: sha256sum -c PACKAGE-MANIFEST.txt  (inside the package dir)
 # The manifest does not list itself
 #
-ff6c8e4d76cb40fe0f15ca310cdd850b2da7837c2a100c82bb74da3150ebad3f  3107  404.html
-cfcb7acceaff1cf174f4db79f721aee85bb1ad9f03547cd53d999bca636ab05b  29280  collection.html
-b7c9fad7bf46330ba824d403f36df92944df96d6a724ab740935e8cde5207807  71801  home.html
-7d556209c357e104ed6a9ae52e6e8cea15369582c9101c63acf5f55774c61104  10408  privacy.html
-1cfaf95ab0eea03fe83d54a954544b94510e2303684d829cd4fa417878888135  44023  product-greco-lariat.html
-6b9a6962d7bbcd8c60dc098ec8e95e4495f895a27b3ee80b0c7194bd127b7fde  43909  product-hammered-hoop.html
-dbf4f634a7115105be066f04068f1d92055128d163f9b2474719043df63b9dc0  44891  product-sweet-nothing.html
-b5a96c24f7b35e050ea5e6c34bc9c056c0e4ae51da1f315dc94c04502539f768  45000  product-threadbare-ring.html
-53c81af5431d5d07fb82401c609739fb998fb616528b995d551b422abeed7185  44755  product-tomboy-ring.html
-edbe7ec65c22399c494218ae76122cc998d95897c9fcb65a29f1406e1aeb4759  28788  story.html
-a0efe03eced5ff1f5fb71afe1e6afcec29e7db448793491285569e2a48a96343  196871  styles.css
-3cb87c40b9f22fa52197fa78d144990d1934c4594f873108354868badb829ca1  6432  test_p7.js
-f32e36655b38ee72b8447a1518e4de7281313a8d3a97a74d19cfa0bf1df820e5  3604  ABHUSHAN-P7-PROMPT.md
+ee0890ba7ca870e69af340b75f917a246b2bb6f633a01c8a0900fa3686ffd435  144975  styles.css
+cd0c68e8b00355f34e77e8acba08e17b8c25b3f16c73347d1ee7ca31a632e9f3  3306  404.html
+6aa2ba6b42f9e827f969f7545f19906757a6bb89e183a2a71488740f2508f1ea  29279  collection.html
+8b6d0219b4fb9eb21654f610a2d738b33a28c7c76841003f050e56c6f2d0dd99  28807  story.html
+bb5a849b3d316e2cf2084032fac5ec42846d8469ee2f9c057861a55ce98e5cf6  10388  privacy.html
